@@ -8,8 +8,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 10822,
-      "sha256": "b95733ee6c0d532e1b662666f29c0f95e535ed76aaf96954c39ef7fcc7f34fc4"
+      "bytes": 11598,
+      "sha256": "2ca38cd3efedd8c4759678cf87dd9e8eef3f1895dceecbb1f1986732ea4f1c14"
     },
     {
       "path": "broker/Cargo.lock",
@@ -157,6 +157,6 @@
       "sha256": "7479f1f2abf91f16ad9d4521cd745b5a6d55d83723b4218e034ee31b63b3b7bb"
     }
   ],
-  "total_bytes": 198164,
+  "total_bytes": 198940,
   "note": "Every file the seed carries, by hash and size. Directories named .git, target, and store are never seed members, and neither is this manifest itself. The size law binds the seed and the grower: this total is the number that law governs."
 }

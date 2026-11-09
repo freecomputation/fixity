@@ -203,6 +203,20 @@ grown runner and a direct build hash identically; without it, the
 two differ only in those embedded paths. That is the whole claim of the system, demonstrated at the smallest
 scale before anything larger is built on it.
 
+The test has also been run on a second host - the owner's
+EliteDesk 800 G1 under Fedora 45, on 2026-11-09. There the
+grower, broker, and model each grew bit-identically against that
+host's own direct builds, and the runner did the same once its
+remap condition was applied to the growth as the statement above
+requires. The Fedora hashes differ from the ones printed here -
+grower a4b860b1, broker b226fb93, model 85dedb39, runner
+185289d5 - because Fedora's rustc 1.99.1 and the rustup 1.99.1
+used here are different builds of the same version, and
+bit-identity is a property of one toolchain build, not of a
+version number. What crossed between the hosts unchanged was
+the store: the same derivation grew the same content hash on
+both, and Pisuk's two-host walk ran on it.
+
 ## Building
 
 "cargo build --release" inside the grower directory builds the
