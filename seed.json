@@ -8,8 +8,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 7932,
-      "sha256": "d612a7b8a150bda207edd9de6384cbbb34de4de095348506dd566567e2ace2ad"
+      "bytes": 8628,
+      "sha256": "a3e495128ae7df4ea811fbfd60582a98a6b246678bc7c443dfcf613654713021"
     },
     {
       "path": "broker/Cargo.lock",
@@ -38,8 +38,8 @@
     },
     {
       "path": "grower/src/main.rs",
-      "bytes": 39920,
-      "sha256": "800c146e3db132f6140e134e5dbcfecf8349b05456f72bf21d53d209dd33d0bd"
+      "bytes": 45076,
+      "sha256": "d4034150b7c7615ce1590eecf9f5051811799a0b3b4744f739c3acb31160216e"
     },
     {
       "path": "recipes/answer-module.json",
@@ -54,7 +54,7 @@
     {
       "path": "recipes/grower.json",
       "bytes": 1002,
-      "sha256": "51f5fda485168c79787d988f4783cf5deca04ac112455eefe8eb986a3abb168b"
+      "sha256": "77ba107c7ec500ee04ac78d11842221f5157e458ce97d09ef65c63cfa35d86bd"
     },
     {
       "path": "recipes/hello-buildinfo.json",
@@ -122,6 +122,6 @@
       "sha256": "7ca5431c8b9482436cbc5421259734d44fae530fb5e064df351dc32c7aa449f7"
     }
   ],
-  "total_bytes": 166036,
+  "total_bytes": 171888,
   "note": "Every file the seed carries, by hash and size. Directories named .git, target, and store are never seed members, and neither is this manifest itself. The size law binds the seed and the grower: this total is the number that law governs."
 }
