@@ -851,6 +851,124 @@ fn cmd_recipe_from_buildinfo(buildinfo_path: &Path, out_path: &Path) {
     }
 }
 
+
+// ---------------------------------------------------------------------
+// The seed manifest: the charter's size law binds the seed and the
+// grower, so the seed's contents and total size are a checkable
+// document, not a claim. Writing walks a tree and pins every file;
+// checking walks it again and names every difference.
+
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+struct SeedFile {
+    path: String,
+    bytes: u64,
+    sha256: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct SeedManifest {
+    format: String,
+    files: Vec<SeedFile>,
+    total_bytes: u64,
+    note: String,
+}
+
+fn walk_seed(dir: &Path, base: &Path, excludes: &[String], out: &mut Vec<SeedFile>) {
+    let mut entries: Vec<PathBuf> = fs::read_dir(dir)
+        .unwrap_or_else(|e| fail(&format!("cannot read {}: {e}", dir.display())))
+        .flatten()
+        .map(|e| e.path())
+        .collect();
+    entries.sort();
+    for path in entries {
+        let name = path.file_name().unwrap_or_default().to_string_lossy().to_string();
+        if name == ".git" || name == "target" || name == "store" {
+            continue;
+        }
+        let rel = path
+            .strip_prefix(base)
+            .unwrap()
+            .to_string_lossy()
+            .replace('\\', "/");
+        if excludes.iter().any(|x| x == &rel || x == &name) {
+            continue;
+        }
+        let meta = fs::metadata(&path).unwrap_or_else(|e| fail(&format!("cannot stat {}: {e}", path.display())));
+        if meta.is_dir() {
+            walk_seed(&path, base, excludes, out);
+        } else if meta.is_file() {
+            out.push(SeedFile {
+                sha256: sha256_file(&path)
+                    .unwrap_or_else(|e| fail(&format!("cannot hash {}: {e}", path.display()))),
+                bytes: meta.len(),
+                path: rel,
+            });
+        }
+    }
+}
+
+fn collect_seed(dir: &Path, excludes: &[String]) -> Vec<SeedFile> {
+    let mut files = Vec::new();
+    walk_seed(dir, dir, excludes, &mut files);
+    files.sort_by(|a, b| a.path.cmp(&b.path));
+    files
+}
+
+fn cmd_seed_write(dir: &Path, out_path: &Path, excludes: &[String]) {
+    let files = collect_seed(dir, excludes);
+    let total: u64 = files.iter().map(|f| f.bytes).sum();
+    let manifest = SeedManifest {
+        format: "idem-seed/0".to_string(),
+        files,
+        total_bytes: total,
+        note: "Every file the seed carries, by hash and size. Directories named .git, target, and store are never seed members, and neither is this manifest itself. The size law binds the seed and the grower: this total is the number that law governs.".to_string(),
+    };
+    let text = serde_json::to_string_pretty(&manifest).unwrap();
+    fs::write(out_path, text + "\n")
+        .unwrap_or_else(|e| fail(&format!("cannot write seed manifest: {e}")));
+    println!(
+        "seed written: {} files, {} bytes total",
+        manifest.files.len(),
+        manifest.total_bytes
+    );
+}
+
+fn cmd_seed_check(dir: &Path, manifest_path: &Path, excludes: &[String]) {
+    let raw = fs::read(manifest_path)
+        .unwrap_or_else(|e| fail(&format!("cannot read seed manifest: {e}")));
+    let manifest: SeedManifest = serde_json::from_slice(&raw)
+        .unwrap_or_else(|e| fail(&format!("seed manifest is unreadable: {e}")));
+    let actual = collect_seed(dir, excludes);
+    let mut problems = 0;
+    for want in &manifest.files {
+        match actual.iter().find(|f| f.path == want.path) {
+            None => {
+                println!("missing: {}", want.path);
+                problems += 1;
+            }
+            Some(got) if got.sha256 != want.sha256 || got.bytes != want.bytes => {
+                println!("changed: {}", want.path);
+                problems += 1;
+            }
+            _ => {}
+        }
+    }
+    for got in &actual {
+        if !manifest.files.iter().any(|f| f.path == got.path) {
+            println!("extra: {}", got.path);
+            problems += 1;
+        }
+    }
+    if problems > 0 {
+        fail(&format!("seed does not answer to its manifest: {problems} difference(s)"));
+    }
+    println!(
+        "seed verified: {} files, {} bytes, every hash answers",
+        manifest.files.len(),
+        manifest.total_bytes
+    );
+}
+
 fn edition_usage() -> ! {
     eprintln!("usage:");
     eprintln!("  grower keygen <key-file>");
@@ -872,6 +990,8 @@ fn usage() -> ! {
     eprintln!("  grower [--store DIR] verify <receipt.json> [derivation.json]");
     eprintln!("  grower [--store DIR] compost <receipt.json>");
     eprintln!("  grower keygen <key-file>");
+    eprintln!("  grower seed write <dir> <out.json> [--exclude <path>]...");
+    eprintln!("  grower seed check <dir> <manifest.json> [--exclude <path>]...");
     eprintln!("  grower recipe from-buildinfo <file.buildinfo> <out.json>");
     eprintln!("  grower edition pack|accept|log ...");
     exit(2);
@@ -885,6 +1005,29 @@ fn main() {
     }
     match rest[0].as_str() {
         "keygen" => cmd_keygen(Path::new(&rest[1])),
+        "seed" => {
+            if rest.len() < 4 {
+                eprintln!("usage: grower seed write|check <dir> <manifest.json> [--exclude <path>]...");
+                exit(2);
+            }
+            let mut excludes: Vec<String> = Vec::new();
+            let mut it = rest.iter().peekable();
+            while let Some(a) = it.next() {
+                if a == "--exclude" {
+                    if let Some(v) = it.next() {
+                        excludes.push(v.clone());
+                    }
+                }
+            }
+            match rest[1].as_str() {
+                "write" => cmd_seed_write(Path::new(&rest[2]), Path::new(&rest[3]), &excludes),
+                "check" => cmd_seed_check(Path::new(&rest[2]), Path::new(&rest[3]), &excludes),
+                _ => {
+                    eprintln!("usage: grower seed write|check <dir> <manifest.json> [--exclude <path>]...");
+                    exit(2);
+                }
+            }
+        }
         "recipe" => {
             if rest.len() < 4 || rest[1] != "from-buildinfo" {
                 eprintln!("usage: grower recipe from-buildinfo <file.buildinfo> <out.json>");
