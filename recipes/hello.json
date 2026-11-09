@@ -1,0 +1,11 @@
+{
+  "name": "hello",
+  "need": "a first grown thing: proof the gate opens and closes",
+  "inputs": [
+    { "path": "material/hello.txt", "sha256": "b26d517d24e99b01ab8aee4a748d606acbb5681369a97ca60788f2e2320deb1f" }
+  ],
+  "steps": [
+    ["cp", "{in0}", "{out}/hello.txt"]
+  ],
+  "outputs": ["hello.txt"]
+}
