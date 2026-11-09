@@ -8,8 +8,23 @@
     },
     {
       "path": "README.md",
-      "bytes": 5458,
-      "sha256": "6c15cb279e8cb0ebdcd0f4fc61711d2b70800e359caacf737f79cd8fbc4039c8"
+      "bytes": 7932,
+      "sha256": "d612a7b8a150bda207edd9de6384cbbb34de4de095348506dd566567e2ace2ad"
+    },
+    {
+      "path": "broker/Cargo.lock",
+      "bytes": 9268,
+      "sha256": "c519293bc9f3b0c95435466f95bc7c5a971caca083d5f80fb26a85030c5e23b7"
+    },
+    {
+      "path": "broker/Cargo.toml",
+      "bytes": 256,
+      "sha256": "349dde2ac99ebbe8656999c57610b537460959e2c7d8a215eff6c0fd217414db"
+    },
+    {
+      "path": "broker/src/main.rs",
+      "bytes": 18436,
+      "sha256": "59d9336dd1332b72f20adca9f4f6834362d9d34bbc146d1991df1e721660c7ff"
     },
     {
       "path": "grower/Cargo.lock",
@@ -27,6 +42,16 @@
       "sha256": "800c146e3db132f6140e134e5dbcfecf8349b05456f72bf21d53d209dd33d0bd"
     },
     {
+      "path": "recipes/answer-module.json",
+      "bytes": 380,
+      "sha256": "194b2b24898214b1622f65c231047ebdc65c10bd0f88f3642a569ab16d648aa0"
+    },
+    {
+      "path": "recipes/broker.json",
+      "bytes": 1008,
+      "sha256": "0e945ce38652c9541dea9a9a5bfc311f1e43e8d5dfb74f782f31ef9c57ced01e"
+    },
+    {
       "path": "recipes/grower.json",
       "bytes": 1002,
       "sha256": "51f5fda485168c79787d988f4783cf5deca04ac112455eefe8eb986a3abb168b"
@@ -42,6 +67,11 @@
       "sha256": "3810fede4b8724ffe86645255ed3e16d332208c7246c71516c929912ea09ac76"
     },
     {
+      "path": "recipes/material/answer.wasm",
+      "bytes": 40,
+      "sha256": "c6ff18f16b81d44d1c307b8364600d87325b0a7db047df52b2cf6de4cf535059"
+    },
+    {
       "path": "recipes/material/hello.txt",
       "bytes": 37,
       "sha256": "b26d517d24e99b01ab8aee4a748d606acbb5681369a97ca60788f2e2320deb1f"
@@ -50,8 +80,48 @@
       "path": "recipes/material/hello_2.12.3-1_amd64.buildinfo",
       "bytes": 6079,
       "sha256": "4605b1d197c2c66c3860e97c276e59992024381abcfe1ccf89ac95d06a399b45"
+    },
+    {
+      "path": "recipes/runner.json",
+      "bytes": 1016,
+      "sha256": "97523cecddbb826c91fcaf558e131106791ecfc374f546927b3e3d15b75bc293"
+    },
+    {
+      "path": "runner/Cargo.lock",
+      "bytes": 43413,
+      "sha256": "ae10b5d6165f78204b85aec9e8b61e51039d8155e6584afefdc87ae82dbf52d0"
+    },
+    {
+      "path": "runner/Cargo.toml",
+      "bytes": 182,
+      "sha256": "831d3ea42ac93290a26fed6bd79dcdc79027d97b2390c25188355dc5a70d6e4c"
+    },
+    {
+      "path": "runner/examples/answer.wat",
+      "bytes": 148,
+      "sha256": "488924d346ee22fb6c713ff1d4a618f4c125a029e3ab58190f75ea743cf42c45"
+    },
+    {
+      "path": "runner/examples/greedy.wat",
+      "bytes": 423,
+      "sha256": "164c9b3ac16c6e0cf98706682826c19be6dcac762ef15eec3c46551683fb85fc"
+    },
+    {
+      "path": "runner/examples/importer.wat",
+      "bytes": 319,
+      "sha256": "1281e27bdbd90743dc37e1ed44d2a4d7317d77c9009d6b36b5d7b6d44b0b077a"
+    },
+    {
+      "path": "runner/examples/loop.wat",
+      "bytes": 196,
+      "sha256": "3bd3f5c5822fb2e8b7ffaddee8f9ddc5ed6c37ffa9ff666513a41d957f76f9b0"
+    },
+    {
+      "path": "runner/src/main.rs",
+      "bytes": 7180,
+      "sha256": "7ca5431c8b9482436cbc5421259734d44fae530fb5e064df351dc32c7aa449f7"
     }
   ],
-  "total_bytes": 81297,
+  "total_bytes": 166036,
   "note": "Every file the seed carries, by hash and size. Directories named .git, target, and store are never seed members, and neither is this manifest itself. The size law binds the seed and the grower: this total is the number that law governs."
 }
