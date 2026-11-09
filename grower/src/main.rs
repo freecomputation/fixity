@@ -716,6 +716,141 @@ fn cmd_edition_log(log_path: &Path) {
     println!("log verified: {} entries, chain unbroken", lines.len());
 }
 
+
+// ---------------------------------------------------------------------
+// Buildinfo recipes: a Debian .buildinfo file is the closest thing
+// the outside world already keeps to a receipt. It records a build's
+// outputs by hash and its whole environment as exact package
+// versions - but not its source inputs, which the package's .dsc
+// pins. Transcribing one faithfully is the prototype for growing
+// other people's software: what such a recipe can and cannot answer
+// for is stated in the recipe itself.
+
+#[derive(Debug, Serialize)]
+struct BuildDep {
+    entry: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    package: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    version: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct BuildInfoRecipe {
+    format: String,
+    source: String,
+    version: String,
+    architecture: String,
+    build_architecture: String,
+    build_date: String,
+    outputs: Vec<ReceiptOutput>,
+    build_depends: Vec<BuildDep>,
+    inputs_known: bool,
+    note: String,
+}
+
+fn parse_buildinfo(text: &str) -> Vec<(String, String)> {
+    // Strip PGP armor: the body starts after the first blank line
+    // that follows the Hash header, and ends at the signature block.
+    let mut body = text;
+    if let Some(pos) = text.find("\n\n") {
+        body = &text[pos + 2..];
+    }
+    if let Some(pos) = body.find("-----BEGIN PGP SIGNATURE-----") {
+        body = &body[..pos];
+    }
+    let mut fields: Vec<(String, String)> = Vec::new();
+    for line in body.lines() {
+        if let Some(rest) = line.strip_prefix([' ', '\t']) {
+            if let Some(last) = fields.last_mut() {
+                last.1.push('\n');
+                last.1.push_str(rest.trim());
+            }
+        } else if let Some(colon) = line.find(':') {
+            fields.push((
+                line[..colon].trim().to_string(),
+                line[colon + 1..].trim().to_string(),
+            ));
+        }
+    }
+    fields
+}
+
+fn field<'a>(fields: &'a [(String, String)], name: &str) -> &'a str {
+    fields
+        .iter()
+        .find(|(k, _)| k.eq_ignore_ascii_case(name))
+        .map(|(_, v)| v.as_str())
+        .unwrap_or("")
+}
+
+fn cmd_recipe_from_buildinfo(buildinfo_path: &Path, out_path: &Path) {
+    let raw = fs::read_to_string(buildinfo_path)
+        .unwrap_or_else(|e| fail(&format!("cannot read buildinfo: {e}")));
+    let fields = parse_buildinfo(&raw);
+    let source = field(&fields, "Source").to_string();
+    if source.is_empty() {
+        fail("buildinfo carries no Source field - not a buildinfo file");
+    }
+    let mut outputs = Vec::new();
+    for line in field(&fields, "Checksums-Sha256").lines() {
+        let parts: Vec<&str> = line.split_whitespace().collect();
+        if parts.len() == 3 {
+            outputs.push(ReceiptOutput {
+                name: parts[2].to_string(),
+                sha256: parts[0].to_string(),
+            });
+        }
+    }
+    if outputs.is_empty() {
+        fail("buildinfo carries no Checksums-Sha256 outputs");
+    }
+    let mut build_depends = Vec::new();
+    for entry in field(&fields, "Installed-Build-Depends").split(',') {
+        let entry = entry.trim();
+        if entry.is_empty() {
+            continue;
+        }
+        let (package, version) = match entry.split_once(" (= ") {
+            Some((pkg, ver)) => (
+                Some(pkg.trim().to_string()),
+                Some(ver.trim_end_matches(')').trim().to_string()),
+            ),
+            None => (None, None),
+        };
+        build_depends.push(BuildDep {
+            entry: entry.to_string(),
+            package,
+            version,
+        });
+    }
+    let recipe = BuildInfoRecipe {
+        format: "idem-buildinfo-recipe/0".to_string(),
+        version: field(&fields, "Version").to_string(),
+        architecture: field(&fields, "Architecture").to_string(),
+        build_architecture: field(&fields, "Build-Architecture").to_string(),
+        build_date: field(&fields, "Build-Date").to_string(),
+        source,
+        outputs,
+        build_depends,
+        inputs_known: false,
+        note: "Prototype receipt transcribed from a Debian .buildinfo. It pins the build's outputs and environment (exact versions). The source inputs are pinned by the package's .dsc, not by this file, so a grower derivation cannot be sealed from this file alone.".to_string(),
+    };
+    let text = serde_json::to_string_pretty(&recipe).unwrap();
+    fs::write(out_path, text + "\n")
+        .unwrap_or_else(|e| fail(&format!("cannot write recipe: {e}")));
+    println!(
+        "recipe: {} {} - {} outputs, {} build dependencies pinned",
+        recipe.source,
+        recipe.version,
+        recipe.outputs.len(),
+        recipe.build_depends.len()
+    );
+    for o in &recipe.outputs {
+        println!("- {} -> {}", o.name, o.sha256);
+    }
+}
+
 fn edition_usage() -> ! {
     eprintln!("usage:");
     eprintln!("  grower keygen <key-file>");
@@ -737,6 +872,7 @@ fn usage() -> ! {
     eprintln!("  grower [--store DIR] verify <receipt.json> [derivation.json]");
     eprintln!("  grower [--store DIR] compost <receipt.json>");
     eprintln!("  grower keygen <key-file>");
+    eprintln!("  grower recipe from-buildinfo <file.buildinfo> <out.json>");
     eprintln!("  grower edition pack|accept|log ...");
     exit(2);
 }
@@ -749,6 +885,13 @@ fn main() {
     }
     match rest[0].as_str() {
         "keygen" => cmd_keygen(Path::new(&rest[1])),
+        "recipe" => {
+            if rest.len() < 4 || rest[1] != "from-buildinfo" {
+                eprintln!("usage: grower recipe from-buildinfo <file.buildinfo> <out.json>");
+                exit(2);
+            }
+            cmd_recipe_from_buildinfo(Path::new(&rest[2]), Path::new(&rest[3]));
+        }
         "grow" => cmd_grow(&args.store, Path::new(&rest[1])),
         "verify" => cmd_verify(
             &args.store,
