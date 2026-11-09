@@ -1,0 +1,200 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Format: 1.0
+Source: hello
+Binary: hello hello-dbgsym
+Architecture: amd64
+Version: 2.12.3-1
+Checksums-Md5:
+ 7f5182fa16889b60926cd714c8756029 69636 hello-dbgsym_2.12.3-1_amd64.deb
+ e352f8c8d64bde15dd2c4049e41bf68d 77364 hello_2.12.3-1_amd64.deb
+Checksums-Sha1:
+ a8314ca2e0696f8fd695d3251601fe781470989e 69636 hello-dbgsym_2.12.3-1_amd64.deb
+ 8ebff002beb47c4ea988fc151219d97e7d28c7b9 77364 hello_2.12.3-1_amd64.deb
+Checksums-Sha256:
+ 5a7183acaa89b6bd9b6ccf7004b6d53fde60d902306f0a44c692ab2100e834c9 69636 hello-dbgsym_2.12.3-1_amd64.deb
+ fcd5f5b2169b376ce84d2b541e1e1c2bf5b855eb5e322dd623a88395e2e7458e 77364 hello_2.12.3-1_amd64.deb
+Build-Origin: Debian
+Build-Architecture: amd64
+Build-Date: Thu, 14 May 2026 08:56:42 +0000
+Build-Path: /build/reproducible-path/hello-2.12.3
+Installed-Build-Depends:
+ autoconf (= 2.72-6),
+ automake (= 1:1.18.1-4),
+ autopoint (= 0.23.2-2),
+ autotools-dev (= 20240727.1+nmu1),
+ base-files (= 14.0),
+ base-passwd (= 3.6.8),
+ bash (= 5.3-3),
+ binutils (= 2.46-3),
+ binutils-common (= 2.46-3),
+ binutils-x86-64-linux-gnu (= 2.46-3),
+ bsdextrautils (= 2.42-6),
+ build-essential (= 12.12),
+ bzip2 (= 1.0.8-6+b2),
+ coreutils (= 9.10-1),
+ cpp (= 4:15.2.0-5+b1),
+ cpp-15 (= 15.2.0-17),
+ cpp-15-x86-64-linux-gnu (= 15.2.0-17),
+ cpp-x86-64-linux-gnu (= 4:15.2.0-5+b1),
+ dash (= 0.5.12-12),
+ debconf (= 1.5.92),
+ debhelper (= 13.31),
+ debianutils (= 5.23.2),
+ dh-autoreconf (= 22),
+ dh-strip-nondeterminism (= 1.15.0-1),
+ diffutils (= 1:3.12-1),
+ dpkg (= 1.23.7),
+ dpkg-dev (= 1.23.7),
+ dwz (= 0.16-4),
+ file (= 1:5.46-5+b2),
+ findutils (= 4.10.0-4),
+ g++ (= 4:15.2.0-5+b1),
+ g++-15 (= 15.2.0-17),
+ g++-15-x86-64-linux-gnu (= 15.2.0-17),
+ g++-x86-64-linux-gnu (= 4:15.2.0-5+b1),
+ gcc (= 4:15.2.0-5+b1),
+ gcc-15 (= 15.2.0-17),
+ gcc-15-base (= 15.2.0-17),
+ gcc-15-x86-64-linux-gnu (= 15.2.0-17),
+ gcc-16-base (= 16.1.0-1),
+ gcc-x86-64-linux-gnu (= 4:15.2.0-5+b1),
+ gettext (= 0.23.2-2),
+ gettext-base (= 0.23.2-2),
+ grep (= 3.12-1),
+ groff-base (= 1.24.1-1),
+ gzip (= 1.13-1),
+ hostname (= 3.25),
+ init-system-helpers (= 1.69),
+ intltool-debian (= 0.35.0+20060710.6),
+ libacl1 (= 2.3.2-3),
+ libarchive-zip-perl (= 1.68-1),
+ libasan8 (= 16.1.0-1),
+ libatomic1 (= 16.1.0-1),
+ libattr1 (= 1:2.5.2-4),
+ libaudit-common (= 1:4.1.2-1),
+ libaudit1 (= 1:4.1.2-1+b1),
+ libbinutils (= 2.46-3),
+ libblkid1 (= 2.42-6),
+ libbz2-1.0 (= 1.0.8-6+b2),
+ libc-bin (= 2.42-16),
+ libc-dev-bin (= 2.42-16),
+ libc-gconv-modules-extra (= 2.42-16),
+ libc6 (= 2.42-16),
+ libc6-dev (= 2.42-16),
+ libcap-ng0 (= 0.9.3-1),
+ libcc1-0 (= 16.1.0-1),
+ libcrypt1 (= 1:4.5.1-1+b1),
+ libctf-nobfd0 (= 2.46-3),
+ libctf0 (= 2.46-3),
+ libdb5.3t64 (= 5.3.28+dfsg2-11+b1),
+ libdebconfclient0 (= 0.282+b3),
+ libdebhelper-perl (= 13.31),
+ libdpkg-perl (= 1.23.7),
+ libelf1t64 (= 0.195-1),
+ libfile-stripnondeterminism-perl (= 1.15.0-1),
+ libgcc-15-dev (= 15.2.0-17),
+ libgcc-s1 (= 16.1.0-1),
+ libgdbm-compat4t64 (= 1.26-1+b2),
+ libgdbm6t64 (= 1.26-1+b2),
+ libgmp10 (= 2:6.3.0+dfsg-5+b2),
+ libgomp1 (= 16.1.0-1),
+ libgprofng0 (= 2.46-3),
+ libhwasan0 (= 16.1.0-1),
+ libintl-perl (= 1.37-1),
+ libisl23 (= 0.27-2),
+ libitm1 (= 16.1.0-1),
+ libjansson4 (= 2.14-2+b4),
+ liblsan0 (= 16.1.0-1),
+ liblzma5 (= 5.8.3-1),
+ libmagic-mgc (= 1:5.46-5+b2),
+ libmagic1t64 (= 1:5.46-5+b2),
+ libmd0 (= 1.2.0-1),
+ libmount1 (= 2.42-6),
+ libmpc3 (= 1.3.1-3),
+ libmpfr6 (= 4.2.2-3),
+ libncursesw6 (= 6.6+20251231-1+b1),
+ libpam-modules (= 1.7.0-5+b2),
+ libpam-modules-bin (= 1.7.0-5+b2),
+ libpam-runtime (= 1.7.0-5),
+ libpam0g (= 1.7.0-5+b2),
+ libpcre2-8-0 (= 10.46-1+b2),
+ libperl5.40 (= 5.40.1-7+b1),
+ libpipeline1 (= 1.5.8-3),
+ libproc2-0 (= 2:4.0.4-9+b2),
+ libquadmath0 (= 16.1.0-1),
+ libseccomp2 (= 2.6.0-2+b1),
+ libselinux1 (= 3.10-1),
+ libsframe3 (= 2.46-3),
+ libsmartcols1 (= 2.42-6),
+ libssl3t64 (= 3.6.2-1),
+ libstdc++-15-dev (= 15.2.0-17),
+ libstdc++6 (= 16.1.0-1),
+ libsystemd0 (= 260.1-1),
+ libtext-charwidth-perl (= 0.04-12),
+ libtext-unidecode-perl (= 1.30-3),
+ libtext-wrapi18n-perl (= 0.06-11),
+ libtinfo6 (= 6.6+20251231-1+b1),
+ libtool (= 2.5.4-11),
+ libtsan2 (= 16.1.0-1),
+ libubsan1 (= 16.1.0-1),
+ libuchardet0 (= 0.0.8-2+b2),
+ libudev1 (= 260.1-1),
+ libunistring5 (= 1.4.2-1),
+ libuuid1 (= 2.42-6),
+ libxml-libxml-perl (= 2.0207+dfsg+really+2.0134-7),
+ libxml-namespacesupport-perl (= 1.12-2),
+ libxml-sax-base-perl (= 1.09-3),
+ libxml-sax-perl (= 1.02+dfsg-5),
+ libxml2-16 (= 2.15.2+dfsg-0.1),
+ libzstd1 (= 1.5.7+dfsg-3+b2),
+ linux-libc-dev (= 7.0.4-1),
+ m4 (= 1.4.21-1),
+ make (= 4.4.1-3),
+ man-db (= 2.13.1-1),
+ mawk (= 1.3.4.20260302-1),
+ ncurses-base (= 6.6+20251231-1),
+ ncurses-bin (= 6.6+20251231-1+b1),
+ openssl-provider-legacy (= 3.6.2-1),
+ patch (= 2.8-2),
+ perl (= 5.40.1-7+b1),
+ perl-base (= 5.40.1-7+b1),
+ perl-modules-5.40 (= 5.40.1-7),
+ po-debconf (= 1.0.22),
+ procps (= 2:4.0.4-9+b2),
+ rpcsvc-proto (= 1.4.3-1),
+ sed (= 4.9-3),
+ sensible-utils (= 0.0.26),
+ sysvinit-utils (= 3.18-1),
+ tar (= 1.35+dfsg-4),
+ tex-common (= 6.20),
+ texinfo (= 7.3-2),
+ texinfo-lib (= 7.3-2),
+ ucf (= 3.0053),
+ util-linux (= 2.42-6),
+ xz-utils (= 5.8.3-1),
+ zlib1g (= 1:1.3.dfsg+really1.3.2-3)
+Environment:
+ DEB_BUILD_OPTIONS="parallel=6"
+ LANG="C.UTF-8"
+ LC_COLLATE="C.UTF-8"
+ LC_CTYPE="C.UTF-8"
+ SOURCE_DATE_EPOCH="1778746500"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEmtr4KUMaso2EQ6NrTwt/65ON6zcFAmoFjkwACgkQTwt/65ON
+6zcY2Q//b7dhXo2wkrlhWyUprmVDSNuz1xLM9ITbPJzQq7Fn/NNmf/Y1uVsZvy5B
+qNIzt1QcxrSrQ4fUY87jbFjk4XB3DY0mzPbCbG8gpX7FDW5jkCBXs6sMZxsXAdrm
+YuPKZV4qv/ikEstS6R7kJujEx5i5MwRM9fcI72W6w7cx0yGA0todByM8Dznk3RgW
+jm7l52Le+WTUK3k301twgyyIS8i8FIr0tY3CwOexzL4BExU9nk5sKL9F0qQ/PSmG
+kgr6YxXvKC1BFh4hEUSd8QSWvfhZ4+LPJO8MG4JPJu/HpbZEdXqgQZiqRP70Fzs2
+6xVtLjoWRhosMzXQOPZq1cFN0ZMT1LIrdq7D3Uh4obxSLSPLNqa/8KzXdKQ2sg3B
+95ABvxN2Dmx8XJdJvbrkNR/Gsj8O0G0Q4GbHxQPKjvbO7BLtZUHBQXfaW1/0BAeG
+oxlK6UHpXD+9mvH6ee6qzPyRd6wgo7NHf076V2WfsHikiqzP0bHs12gIX8ddjGpD
+fIos349rLSRDle+xLo31ZcY3+gg3Uu1Pc47yhWKrBEXXDFUJCJwkQ4L+azhthgCV
+wGOMSudV2vGoojQpzNr7sCc7x/6GSxpq7p4Dx4/lHSGOmzqm+0jlU0H7Nw0wTbuQ
+RNbcyLGQ6ReRwGmDaB/B8pyP0NTGptmjcLJOgAhPjOimnGYqJno=
+=zpeR
+-----END PGP SIGNATURE-----

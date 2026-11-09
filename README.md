@@ -74,13 +74,25 @@ grows. An unsigned capsule is refused unless the owner passes
 --allow-unsigned for that capsule, out loud. The log records the
 signer of every accepted edition.
 
+## Recipes from the outside world
+
+"grower recipe from-buildinfo <file.buildinfo> <out.json>" transcribes
+a Debian .buildinfo file - the closest thing the outside world already
+keeps to a receipt. The recipe pins the build's outputs by hash and
+its whole environment as exact package versions. It also states its
+own limit in the file: the source inputs are pinned by the package's
+.dsc, not by the .buildinfo, so a derivation cannot be sealed from
+this file alone. recipes/hello-buildinfo.json is the worked example,
+transcribed from the signed buildinfo of hello 2.12.3-1, kept beside
+it in recipes/material/.
+
 ## The acceptance test
 
 The grower recipe grows the grower from its own source. Built with
 rustc 1.99.1 and the dependency versions pinned in grower/Cargo.lock,
 the grown binary and the binary that grew it hash identically:
 
-129f9329db24a8ff45662cdab16f101f3e5749c862d21585b02bc6bc8e8e7f47
+df046b7e93a4eeab590189a143abcb14ede29231fe5e33296102901de3bc4bba
 
 A second growth of the same derivation reproduces that hash, and a
 one-line change to any pinned input makes the gate refuse the build.

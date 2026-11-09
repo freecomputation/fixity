@@ -1,0 +1,797 @@
+{
+  "format": "idem-buildinfo-recipe/0",
+  "source": "hello",
+  "version": "2.12.3-1",
+  "architecture": "amd64",
+  "build_architecture": "amd64",
+  "build_date": "Thu, 14 May 2026 08:56:42 +0000",
+  "outputs": [
+    {
+      "name": "hello-dbgsym_2.12.3-1_amd64.deb",
+      "sha256": "5a7183acaa89b6bd9b6ccf7004b6d53fde60d902306f0a44c692ab2100e834c9"
+    },
+    {
+      "name": "hello_2.12.3-1_amd64.deb",
+      "sha256": "fcd5f5b2169b376ce84d2b541e1e1c2bf5b855eb5e322dd623a88395e2e7458e"
+    }
+  ],
+  "build_depends": [
+    {
+      "entry": "autoconf (= 2.72-6)",
+      "package": "autoconf",
+      "version": "2.72-6"
+    },
+    {
+      "entry": "automake (= 1:1.18.1-4)",
+      "package": "automake",
+      "version": "1:1.18.1-4"
+    },
+    {
+      "entry": "autopoint (= 0.23.2-2)",
+      "package": "autopoint",
+      "version": "0.23.2-2"
+    },
+    {
+      "entry": "autotools-dev (= 20240727.1+nmu1)",
+      "package": "autotools-dev",
+      "version": "20240727.1+nmu1"
+    },
+    {
+      "entry": "base-files (= 14.0)",
+      "package": "base-files",
+      "version": "14.0"
+    },
+    {
+      "entry": "base-passwd (= 3.6.8)",
+      "package": "base-passwd",
+      "version": "3.6.8"
+    },
+    {
+      "entry": "bash (= 5.3-3)",
+      "package": "bash",
+      "version": "5.3-3"
+    },
+    {
+      "entry": "binutils (= 2.46-3)",
+      "package": "binutils",
+      "version": "2.46-3"
+    },
+    {
+      "entry": "binutils-common (= 2.46-3)",
+      "package": "binutils-common",
+      "version": "2.46-3"
+    },
+    {
+      "entry": "binutils-x86-64-linux-gnu (= 2.46-3)",
+      "package": "binutils-x86-64-linux-gnu",
+      "version": "2.46-3"
+    },
+    {
+      "entry": "bsdextrautils (= 2.42-6)",
+      "package": "bsdextrautils",
+      "version": "2.42-6"
+    },
+    {
+      "entry": "build-essential (= 12.12)",
+      "package": "build-essential",
+      "version": "12.12"
+    },
+    {
+      "entry": "bzip2 (= 1.0.8-6+b2)",
+      "package": "bzip2",
+      "version": "1.0.8-6+b2"
+    },
+    {
+      "entry": "coreutils (= 9.10-1)",
+      "package": "coreutils",
+      "version": "9.10-1"
+    },
+    {
+      "entry": "cpp (= 4:15.2.0-5+b1)",
+      "package": "cpp",
+      "version": "4:15.2.0-5+b1"
+    },
+    {
+      "entry": "cpp-15 (= 15.2.0-17)",
+      "package": "cpp-15",
+      "version": "15.2.0-17"
+    },
+    {
+      "entry": "cpp-15-x86-64-linux-gnu (= 15.2.0-17)",
+      "package": "cpp-15-x86-64-linux-gnu",
+      "version": "15.2.0-17"
+    },
+    {
+      "entry": "cpp-x86-64-linux-gnu (= 4:15.2.0-5+b1)",
+      "package": "cpp-x86-64-linux-gnu",
+      "version": "4:15.2.0-5+b1"
+    },
+    {
+      "entry": "dash (= 0.5.12-12)",
+      "package": "dash",
+      "version": "0.5.12-12"
+    },
+    {
+      "entry": "debconf (= 1.5.92)",
+      "package": "debconf",
+      "version": "1.5.92"
+    },
+    {
+      "entry": "debhelper (= 13.31)",
+      "package": "debhelper",
+      "version": "13.31"
+    },
+    {
+      "entry": "debianutils (= 5.23.2)",
+      "package": "debianutils",
+      "version": "5.23.2"
+    },
+    {
+      "entry": "dh-autoreconf (= 22)",
+      "package": "dh-autoreconf",
+      "version": "22"
+    },
+    {
+      "entry": "dh-strip-nondeterminism (= 1.15.0-1)",
+      "package": "dh-strip-nondeterminism",
+      "version": "1.15.0-1"
+    },
+    {
+      "entry": "diffutils (= 1:3.12-1)",
+      "package": "diffutils",
+      "version": "1:3.12-1"
+    },
+    {
+      "entry": "dpkg (= 1.23.7)",
+      "package": "dpkg",
+      "version": "1.23.7"
+    },
+    {
+      "entry": "dpkg-dev (= 1.23.7)",
+      "package": "dpkg-dev",
+      "version": "1.23.7"
+    },
+    {
+      "entry": "dwz (= 0.16-4)",
+      "package": "dwz",
+      "version": "0.16-4"
+    },
+    {
+      "entry": "file (= 1:5.46-5+b2)",
+      "package": "file",
+      "version": "1:5.46-5+b2"
+    },
+    {
+      "entry": "findutils (= 4.10.0-4)",
+      "package": "findutils",
+      "version": "4.10.0-4"
+    },
+    {
+      "entry": "g++ (= 4:15.2.0-5+b1)",
+      "package": "g++",
+      "version": "4:15.2.0-5+b1"
+    },
+    {
+      "entry": "g++-15 (= 15.2.0-17)",
+      "package": "g++-15",
+      "version": "15.2.0-17"
+    },
+    {
+      "entry": "g++-15-x86-64-linux-gnu (= 15.2.0-17)",
+      "package": "g++-15-x86-64-linux-gnu",
+      "version": "15.2.0-17"
+    },
+    {
+      "entry": "g++-x86-64-linux-gnu (= 4:15.2.0-5+b1)",
+      "package": "g++-x86-64-linux-gnu",
+      "version": "4:15.2.0-5+b1"
+    },
+    {
+      "entry": "gcc (= 4:15.2.0-5+b1)",
+      "package": "gcc",
+      "version": "4:15.2.0-5+b1"
+    },
+    {
+      "entry": "gcc-15 (= 15.2.0-17)",
+      "package": "gcc-15",
+      "version": "15.2.0-17"
+    },
+    {
+      "entry": "gcc-15-base (= 15.2.0-17)",
+      "package": "gcc-15-base",
+      "version": "15.2.0-17"
+    },
+    {
+      "entry": "gcc-15-x86-64-linux-gnu (= 15.2.0-17)",
+      "package": "gcc-15-x86-64-linux-gnu",
+      "version": "15.2.0-17"
+    },
+    {
+      "entry": "gcc-16-base (= 16.1.0-1)",
+      "package": "gcc-16-base",
+      "version": "16.1.0-1"
+    },
+    {
+      "entry": "gcc-x86-64-linux-gnu (= 4:15.2.0-5+b1)",
+      "package": "gcc-x86-64-linux-gnu",
+      "version": "4:15.2.0-5+b1"
+    },
+    {
+      "entry": "gettext (= 0.23.2-2)",
+      "package": "gettext",
+      "version": "0.23.2-2"
+    },
+    {
+      "entry": "gettext-base (= 0.23.2-2)",
+      "package": "gettext-base",
+      "version": "0.23.2-2"
+    },
+    {
+      "entry": "grep (= 3.12-1)",
+      "package": "grep",
+      "version": "3.12-1"
+    },
+    {
+      "entry": "groff-base (= 1.24.1-1)",
+      "package": "groff-base",
+      "version": "1.24.1-1"
+    },
+    {
+      "entry": "gzip (= 1.13-1)",
+      "package": "gzip",
+      "version": "1.13-1"
+    },
+    {
+      "entry": "hostname (= 3.25)",
+      "package": "hostname",
+      "version": "3.25"
+    },
+    {
+      "entry": "init-system-helpers (= 1.69)",
+      "package": "init-system-helpers",
+      "version": "1.69"
+    },
+    {
+      "entry": "intltool-debian (= 0.35.0+20060710.6)",
+      "package": "intltool-debian",
+      "version": "0.35.0+20060710.6"
+    },
+    {
+      "entry": "libacl1 (= 2.3.2-3)",
+      "package": "libacl1",
+      "version": "2.3.2-3"
+    },
+    {
+      "entry": "libarchive-zip-perl (= 1.68-1)",
+      "package": "libarchive-zip-perl",
+      "version": "1.68-1"
+    },
+    {
+      "entry": "libasan8 (= 16.1.0-1)",
+      "package": "libasan8",
+      "version": "16.1.0-1"
+    },
+    {
+      "entry": "libatomic1 (= 16.1.0-1)",
+      "package": "libatomic1",
+      "version": "16.1.0-1"
+    },
+    {
+      "entry": "libattr1 (= 1:2.5.2-4)",
+      "package": "libattr1",
+      "version": "1:2.5.2-4"
+    },
+    {
+      "entry": "libaudit-common (= 1:4.1.2-1)",
+      "package": "libaudit-common",
+      "version": "1:4.1.2-1"
+    },
+    {
+      "entry": "libaudit1 (= 1:4.1.2-1+b1)",
+      "package": "libaudit1",
+      "version": "1:4.1.2-1+b1"
+    },
+    {
+      "entry": "libbinutils (= 2.46-3)",
+      "package": "libbinutils",
+      "version": "2.46-3"
+    },
+    {
+      "entry": "libblkid1 (= 2.42-6)",
+      "package": "libblkid1",
+      "version": "2.42-6"
+    },
+    {
+      "entry": "libbz2-1.0 (= 1.0.8-6+b2)",
+      "package": "libbz2-1.0",
+      "version": "1.0.8-6+b2"
+    },
+    {
+      "entry": "libc-bin (= 2.42-16)",
+      "package": "libc-bin",
+      "version": "2.42-16"
+    },
+    {
+      "entry": "libc-dev-bin (= 2.42-16)",
+      "package": "libc-dev-bin",
+      "version": "2.42-16"
+    },
+    {
+      "entry": "libc-gconv-modules-extra (= 2.42-16)",
+      "package": "libc-gconv-modules-extra",
+      "version": "2.42-16"
+    },
+    {
+      "entry": "libc6 (= 2.42-16)",
+      "package": "libc6",
+      "version": "2.42-16"
+    },
+    {
+      "entry": "libc6-dev (= 2.42-16)",
+      "package": "libc6-dev",
+      "version": "2.42-16"
+    },
+    {
+      "entry": "libcap-ng0 (= 0.9.3-1)",
+      "package": "libcap-ng0",
+      "version": "0.9.3-1"
+    },
+    {
+      "entry": "libcc1-0 (= 16.1.0-1)",
+      "package": "libcc1-0",
+      "version": "16.1.0-1"
+    },
+    {
+      "entry": "libcrypt1 (= 1:4.5.1-1+b1)",
+      "package": "libcrypt1",
+      "version": "1:4.5.1-1+b1"
+    },
+    {
+      "entry": "libctf-nobfd0 (= 2.46-3)",
+      "package": "libctf-nobfd0",
+      "version": "2.46-3"
+    },
+    {
+      "entry": "libctf0 (= 2.46-3)",
+      "package": "libctf0",
+      "version": "2.46-3"
+    },
+    {
+      "entry": "libdb5.3t64 (= 5.3.28+dfsg2-11+b1)",
+      "package": "libdb5.3t64",
+      "version": "5.3.28+dfsg2-11+b1"
+    },
+    {
+      "entry": "libdebconfclient0 (= 0.282+b3)",
+      "package": "libdebconfclient0",
+      "version": "0.282+b3"
+    },
+    {
+      "entry": "libdebhelper-perl (= 13.31)",
+      "package": "libdebhelper-perl",
+      "version": "13.31"
+    },
+    {
+      "entry": "libdpkg-perl (= 1.23.7)",
+      "package": "libdpkg-perl",
+      "version": "1.23.7"
+    },
+    {
+      "entry": "libelf1t64 (= 0.195-1)",
+      "package": "libelf1t64",
+      "version": "0.195-1"
+    },
+    {
+      "entry": "libfile-stripnondeterminism-perl (= 1.15.0-1)",
+      "package": "libfile-stripnondeterminism-perl",
+      "version": "1.15.0-1"
+    },
+    {
+      "entry": "libgcc-15-dev (= 15.2.0-17)",
+      "package": "libgcc-15-dev",
+      "version": "15.2.0-17"
+    },
+    {
+      "entry": "libgcc-s1 (= 16.1.0-1)",
+      "package": "libgcc-s1",
+      "version": "16.1.0-1"
+    },
+    {
+      "entry": "libgdbm-compat4t64 (= 1.26-1+b2)",
+      "package": "libgdbm-compat4t64",
+      "version": "1.26-1+b2"
+    },
+    {
+      "entry": "libgdbm6t64 (= 1.26-1+b2)",
+      "package": "libgdbm6t64",
+      "version": "1.26-1+b2"
+    },
+    {
+      "entry": "libgmp10 (= 2:6.3.0+dfsg-5+b2)",
+      "package": "libgmp10",
+      "version": "2:6.3.0+dfsg-5+b2"
+    },
+    {
+      "entry": "libgomp1 (= 16.1.0-1)",
+      "package": "libgomp1",
+      "version": "16.1.0-1"
+    },
+    {
+      "entry": "libgprofng0 (= 2.46-3)",
+      "package": "libgprofng0",
+      "version": "2.46-3"
+    },
+    {
+      "entry": "libhwasan0 (= 16.1.0-1)",
+      "package": "libhwasan0",
+      "version": "16.1.0-1"
+    },
+    {
+      "entry": "libintl-perl (= 1.37-1)",
+      "package": "libintl-perl",
+      "version": "1.37-1"
+    },
+    {
+      "entry": "libisl23 (= 0.27-2)",
+      "package": "libisl23",
+      "version": "0.27-2"
+    },
+    {
+      "entry": "libitm1 (= 16.1.0-1)",
+      "package": "libitm1",
+      "version": "16.1.0-1"
+    },
+    {
+      "entry": "libjansson4 (= 2.14-2+b4)",
+      "package": "libjansson4",
+      "version": "2.14-2+b4"
+    },
+    {
+      "entry": "liblsan0 (= 16.1.0-1)",
+      "package": "liblsan0",
+      "version": "16.1.0-1"
+    },
+    {
+      "entry": "liblzma5 (= 5.8.3-1)",
+      "package": "liblzma5",
+      "version": "5.8.3-1"
+    },
+    {
+      "entry": "libmagic-mgc (= 1:5.46-5+b2)",
+      "package": "libmagic-mgc",
+      "version": "1:5.46-5+b2"
+    },
+    {
+      "entry": "libmagic1t64 (= 1:5.46-5+b2)",
+      "package": "libmagic1t64",
+      "version": "1:5.46-5+b2"
+    },
+    {
+      "entry": "libmd0 (= 1.2.0-1)",
+      "package": "libmd0",
+      "version": "1.2.0-1"
+    },
+    {
+      "entry": "libmount1 (= 2.42-6)",
+      "package": "libmount1",
+      "version": "2.42-6"
+    },
+    {
+      "entry": "libmpc3 (= 1.3.1-3)",
+      "package": "libmpc3",
+      "version": "1.3.1-3"
+    },
+    {
+      "entry": "libmpfr6 (= 4.2.2-3)",
+      "package": "libmpfr6",
+      "version": "4.2.2-3"
+    },
+    {
+      "entry": "libncursesw6 (= 6.6+20251231-1+b1)",
+      "package": "libncursesw6",
+      "version": "6.6+20251231-1+b1"
+    },
+    {
+      "entry": "libpam-modules (= 1.7.0-5+b2)",
+      "package": "libpam-modules",
+      "version": "1.7.0-5+b2"
+    },
+    {
+      "entry": "libpam-modules-bin (= 1.7.0-5+b2)",
+      "package": "libpam-modules-bin",
+      "version": "1.7.0-5+b2"
+    },
+    {
+      "entry": "libpam-runtime (= 1.7.0-5)",
+      "package": "libpam-runtime",
+      "version": "1.7.0-5"
+    },
+    {
+      "entry": "libpam0g (= 1.7.0-5+b2)",
+      "package": "libpam0g",
+      "version": "1.7.0-5+b2"
+    },
+    {
+      "entry": "libpcre2-8-0 (= 10.46-1+b2)",
+      "package": "libpcre2-8-0",
+      "version": "10.46-1+b2"
+    },
+    {
+      "entry": "libperl5.40 (= 5.40.1-7+b1)",
+      "package": "libperl5.40",
+      "version": "5.40.1-7+b1"
+    },
+    {
+      "entry": "libpipeline1 (= 1.5.8-3)",
+      "package": "libpipeline1",
+      "version": "1.5.8-3"
+    },
+    {
+      "entry": "libproc2-0 (= 2:4.0.4-9+b2)",
+      "package": "libproc2-0",
+      "version": "2:4.0.4-9+b2"
+    },
+    {
+      "entry": "libquadmath0 (= 16.1.0-1)",
+      "package": "libquadmath0",
+      "version": "16.1.0-1"
+    },
+    {
+      "entry": "libseccomp2 (= 2.6.0-2+b1)",
+      "package": "libseccomp2",
+      "version": "2.6.0-2+b1"
+    },
+    {
+      "entry": "libselinux1 (= 3.10-1)",
+      "package": "libselinux1",
+      "version": "3.10-1"
+    },
+    {
+      "entry": "libsframe3 (= 2.46-3)",
+      "package": "libsframe3",
+      "version": "2.46-3"
+    },
+    {
+      "entry": "libsmartcols1 (= 2.42-6)",
+      "package": "libsmartcols1",
+      "version": "2.42-6"
+    },
+    {
+      "entry": "libssl3t64 (= 3.6.2-1)",
+      "package": "libssl3t64",
+      "version": "3.6.2-1"
+    },
+    {
+      "entry": "libstdc++-15-dev (= 15.2.0-17)",
+      "package": "libstdc++-15-dev",
+      "version": "15.2.0-17"
+    },
+    {
+      "entry": "libstdc++6 (= 16.1.0-1)",
+      "package": "libstdc++6",
+      "version": "16.1.0-1"
+    },
+    {
+      "entry": "libsystemd0 (= 260.1-1)",
+      "package": "libsystemd0",
+      "version": "260.1-1"
+    },
+    {
+      "entry": "libtext-charwidth-perl (= 0.04-12)",
+      "package": "libtext-charwidth-perl",
+      "version": "0.04-12"
+    },
+    {
+      "entry": "libtext-unidecode-perl (= 1.30-3)",
+      "package": "libtext-unidecode-perl",
+      "version": "1.30-3"
+    },
+    {
+      "entry": "libtext-wrapi18n-perl (= 0.06-11)",
+      "package": "libtext-wrapi18n-perl",
+      "version": "0.06-11"
+    },
+    {
+      "entry": "libtinfo6 (= 6.6+20251231-1+b1)",
+      "package": "libtinfo6",
+      "version": "6.6+20251231-1+b1"
+    },
+    {
+      "entry": "libtool (= 2.5.4-11)",
+      "package": "libtool",
+      "version": "2.5.4-11"
+    },
+    {
+      "entry": "libtsan2 (= 16.1.0-1)",
+      "package": "libtsan2",
+      "version": "16.1.0-1"
+    },
+    {
+      "entry": "libubsan1 (= 16.1.0-1)",
+      "package": "libubsan1",
+      "version": "16.1.0-1"
+    },
+    {
+      "entry": "libuchardet0 (= 0.0.8-2+b2)",
+      "package": "libuchardet0",
+      "version": "0.0.8-2+b2"
+    },
+    {
+      "entry": "libudev1 (= 260.1-1)",
+      "package": "libudev1",
+      "version": "260.1-1"
+    },
+    {
+      "entry": "libunistring5 (= 1.4.2-1)",
+      "package": "libunistring5",
+      "version": "1.4.2-1"
+    },
+    {
+      "entry": "libuuid1 (= 2.42-6)",
+      "package": "libuuid1",
+      "version": "2.42-6"
+    },
+    {
+      "entry": "libxml-libxml-perl (= 2.0207+dfsg+really+2.0134-7)",
+      "package": "libxml-libxml-perl",
+      "version": "2.0207+dfsg+really+2.0134-7"
+    },
+    {
+      "entry": "libxml-namespacesupport-perl (= 1.12-2)",
+      "package": "libxml-namespacesupport-perl",
+      "version": "1.12-2"
+    },
+    {
+      "entry": "libxml-sax-base-perl (= 1.09-3)",
+      "package": "libxml-sax-base-perl",
+      "version": "1.09-3"
+    },
+    {
+      "entry": "libxml-sax-perl (= 1.02+dfsg-5)",
+      "package": "libxml-sax-perl",
+      "version": "1.02+dfsg-5"
+    },
+    {
+      "entry": "libxml2-16 (= 2.15.2+dfsg-0.1)",
+      "package": "libxml2-16",
+      "version": "2.15.2+dfsg-0.1"
+    },
+    {
+      "entry": "libzstd1 (= 1.5.7+dfsg-3+b2)",
+      "package": "libzstd1",
+      "version": "1.5.7+dfsg-3+b2"
+    },
+    {
+      "entry": "linux-libc-dev (= 7.0.4-1)",
+      "package": "linux-libc-dev",
+      "version": "7.0.4-1"
+    },
+    {
+      "entry": "m4 (= 1.4.21-1)",
+      "package": "m4",
+      "version": "1.4.21-1"
+    },
+    {
+      "entry": "make (= 4.4.1-3)",
+      "package": "make",
+      "version": "4.4.1-3"
+    },
+    {
+      "entry": "man-db (= 2.13.1-1)",
+      "package": "man-db",
+      "version": "2.13.1-1"
+    },
+    {
+      "entry": "mawk (= 1.3.4.20260302-1)",
+      "package": "mawk",
+      "version": "1.3.4.20260302-1"
+    },
+    {
+      "entry": "ncurses-base (= 6.6+20251231-1)",
+      "package": "ncurses-base",
+      "version": "6.6+20251231-1"
+    },
+    {
+      "entry": "ncurses-bin (= 6.6+20251231-1+b1)",
+      "package": "ncurses-bin",
+      "version": "6.6+20251231-1+b1"
+    },
+    {
+      "entry": "openssl-provider-legacy (= 3.6.2-1)",
+      "package": "openssl-provider-legacy",
+      "version": "3.6.2-1"
+    },
+    {
+      "entry": "patch (= 2.8-2)",
+      "package": "patch",
+      "version": "2.8-2"
+    },
+    {
+      "entry": "perl (= 5.40.1-7+b1)",
+      "package": "perl",
+      "version": "5.40.1-7+b1"
+    },
+    {
+      "entry": "perl-base (= 5.40.1-7+b1)",
+      "package": "perl-base",
+      "version": "5.40.1-7+b1"
+    },
+    {
+      "entry": "perl-modules-5.40 (= 5.40.1-7)",
+      "package": "perl-modules-5.40",
+      "version": "5.40.1-7"
+    },
+    {
+      "entry": "po-debconf (= 1.0.22)",
+      "package": "po-debconf",
+      "version": "1.0.22"
+    },
+    {
+      "entry": "procps (= 2:4.0.4-9+b2)",
+      "package": "procps",
+      "version": "2:4.0.4-9+b2"
+    },
+    {
+      "entry": "rpcsvc-proto (= 1.4.3-1)",
+      "package": "rpcsvc-proto",
+      "version": "1.4.3-1"
+    },
+    {
+      "entry": "sed (= 4.9-3)",
+      "package": "sed",
+      "version": "4.9-3"
+    },
+    {
+      "entry": "sensible-utils (= 0.0.26)",
+      "package": "sensible-utils",
+      "version": "0.0.26"
+    },
+    {
+      "entry": "sysvinit-utils (= 3.18-1)",
+      "package": "sysvinit-utils",
+      "version": "3.18-1"
+    },
+    {
+      "entry": "tar (= 1.35+dfsg-4)",
+      "package": "tar",
+      "version": "1.35+dfsg-4"
+    },
+    {
+      "entry": "tex-common (= 6.20)",
+      "package": "tex-common",
+      "version": "6.20"
+    },
+    {
+      "entry": "texinfo (= 7.3-2)",
+      "package": "texinfo",
+      "version": "7.3-2"
+    },
+    {
+      "entry": "texinfo-lib (= 7.3-2)",
+      "package": "texinfo-lib",
+      "version": "7.3-2"
+    },
+    {
+      "entry": "ucf (= 3.0053)",
+      "package": "ucf",
+      "version": "3.0053"
+    },
+    {
+      "entry": "util-linux (= 2.42-6)",
+      "package": "util-linux",
+      "version": "2.42-6"
+    },
+    {
+      "entry": "xz-utils (= 5.8.3-1)",
+      "package": "xz-utils",
+      "version": "5.8.3-1"
+    },
+    {
+      "entry": "zlib1g (= 1:1.3.dfsg+really1.3.2-3)",
+      "package": "zlib1g",
+      "version": "1:1.3.dfsg+really1.3.2-3"
+    }
+  ],
+  "inputs_known": false,
+  "note": "Prototype receipt transcribed from a Debian .buildinfo. It pins the build's outputs and environment (exact versions). The source inputs are pinned by the package's .dsc, not by this file, so a grower derivation cannot be sealed from this file alone."
+}
