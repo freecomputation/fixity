@@ -74,6 +74,18 @@ grows. An unsigned capsule is refused unless the owner passes
 --allow-unsigned for that capsule, out loud. The log records the
 signer of every accepted edition.
 
+A hash chain proves a log was not edited only to someone who trusts
+their copy of its head. A witness closes that gap: "grower edition
+witness <log-file> <key-file>" has an independent key co-sign the
+log's current head, and the witness line travels in the same file,
+so the proof moves offline with the log itself. "edition log" then
+verifies every witness line where it stands - the head it names
+must be the head the chain reaches at that point, and the signature
+must verify. Rewrite an entry and the chain breaks; forge the
+witness and the signature fails; move the witness line and it
+stands over a head that is not there. One key witnessing the same
+head twice is noted and not repeated.
+
 ## Recipes from the outside world
 
 "grower recipe from-buildinfo <file.buildinfo> <out.json>" transcribes
@@ -135,7 +147,7 @@ The grower recipe grows the grower from its own source. Built with
 rustc 1.99.1 and the dependency versions pinned in grower/Cargo.lock,
 the grown binary and the binary that grew it hash identically:
 
-9d2e9a1af1eebc45aa41f24a8a6666c9d59aec6081a42b1a8bbdaba03d1ba6d5
+2a91405b1113ab372c2cee3e2f7ec296afaf0d1fcd824b3a55ca66b09986c5ca
 
 A second growth of the same derivation reproduces that hash, and a
 one-line change to any pinned input makes the gate refuse the build.

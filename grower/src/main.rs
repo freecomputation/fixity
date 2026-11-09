@@ -579,6 +579,43 @@ fn log_line_hash(prev: &str, entry: &LogEntry) -> String {
 }
 
 fn read_log(path: &Path) -> Vec<LogLine> {
+    read_log_records(path)
+        .into_iter()
+        .filter_map(|r| match r {
+            LogRecord::Entry(line) => Some(line),
+            LogRecord::Witness(_) => None,
+        })
+        .collect()
+}
+
+// A witness line: an independent key co-signs the log's head - the
+// hash of the newest entry at the moment of witnessing. The witness
+// attests "the log I saw ended here"; a later rewrite of history
+// either breaks the entry chain or strands the witness signature
+// over a head that no longer exists. This is the Sigsum shape,
+// carried in the same file so the proof travels offline with the
+// log itself.
+#[derive(Debug, Serialize, Deserialize)]
+struct WitnessLine {
+    head: String,
+    signer: String,
+    signature: String,
+}
+
+#[derive(Debug)]
+enum LogRecord {
+    Entry(LogLine),
+    Witness(WitnessLine),
+}
+
+/// The bytes a witness signature answers to, domain separated from
+/// manifest signatures so a key's signature on one kind of statement
+/// can never be replayed as the other.
+fn witness_body(head: &str) -> Vec<u8> {
+    format!("idem-witness: {head}\n").into_bytes()
+}
+
+fn read_log_records(path: &Path) -> Vec<LogRecord> {
     if !path.exists() {
         return Vec::new();
     }
@@ -588,11 +625,62 @@ fn read_log(path: &Path) -> Vec<LogLine> {
         if line.trim().is_empty() {
             continue;
         }
-        let parsed: LogLine = serde_json::from_str(line)
+        let value: serde_json::Value = serde_json::from_str(line)
             .unwrap_or_else(|e| fail(&format!("log line is unreadable: {e}")));
-        out.push(parsed);
+        if let Some(w) = value.get("witness") {
+            let parsed: WitnessLine = serde_json::from_value(w.clone())
+                .unwrap_or_else(|e| fail(&format!("log witness line is unreadable: {e}")));
+            out.push(LogRecord::Witness(parsed));
+        } else {
+            let parsed: LogLine = serde_json::from_value(value)
+                .unwrap_or_else(|e| fail(&format!("log line is unreadable: {e}")));
+            out.push(LogRecord::Entry(parsed));
+        }
     }
     out
+}
+
+fn cmd_edition_witness(log_path: &Path, key_path: &Path) {
+    let records = read_log_records(log_path);
+    let entries: Vec<&LogLine> = records
+        .iter()
+        .filter_map(|r| match r {
+            LogRecord::Entry(line) => Some(line),
+            LogRecord::Witness(_) => None,
+        })
+        .collect();
+    let head = entries
+        .last()
+        .unwrap_or_else(|| fail("the log has no entries - there is no head to witness"))
+        .hash
+        .clone();
+    let key = load_signing_key(key_path);
+    let signer = hex_encode(key.verifying_key().as_bytes());
+    for record in &records {
+        if let LogRecord::Witness(w) = record {
+            if w.head == head && w.signer.eq_ignore_ascii_case(&signer) {
+                println!("already witnessed: this key already stands over head {head}");
+                return;
+            }
+        }
+    }
+    use ed25519_dalek::Signer;
+    let signature = hex_encode(&key.sign(&witness_body(&head)).to_bytes());
+    let line = serde_json::json!({
+        "witness": WitnessLine {
+            head: head.clone(),
+            signer,
+            signature,
+        }
+    });
+    let mut text = fs::read_to_string(log_path).unwrap_or_default();
+    if !text.is_empty() && !text.ends_with('\n') {
+        text.push('\n');
+    }
+    text.push_str(&line.to_string());
+    text.push('\n');
+    fs::write(log_path, text).unwrap_or_else(|e| fail(&format!("cannot append to log: {e}")));
+    println!("witnessed: head {head} by the key in {}", key_path.display());
 }
 
 fn cmd_edition_accept(store: &Path, capsule_dir: &Path, log_path: &Path, trust: Option<&Path>, allow_unsigned: bool) {
@@ -701,19 +789,58 @@ fn cmd_edition_accept(store: &Path, capsule_dir: &Path, log_path: &Path, trust: 
 }
 
 fn cmd_edition_log(log_path: &Path) {
-    let lines = read_log(log_path);
+    let records = read_log_records(log_path);
     let mut prev = "GENESIS".to_string();
-    for line in &lines {
-        if line.prev != prev {
-            fail(&format!("log chain broken at entry {}", line.entry.seq));
+    let mut entries = 0usize;
+    let mut witnesses = 0usize;
+    for record in &records {
+        match record {
+            LogRecord::Entry(line) => {
+                if line.prev != prev {
+                    fail(&format!("log chain broken at entry {}", line.entry.seq));
+                }
+                if log_line_hash(&line.prev, &line.entry) != line.hash {
+                    fail(&format!(
+                        "log entry {} does not hash to its line",
+                        line.entry.seq
+                    ));
+                }
+                println!("- {}: {}", line.entry.seq, line.entry.name);
+                prev = line.hash.clone();
+                entries += 1;
+            }
+            LogRecord::Witness(w) => {
+                if w.head != prev {
+                    fail(&format!(
+                        "witness stands over head {}, but the log's head there is {}",
+                        w.head, prev
+                    ));
+                }
+                let key_bytes = hex_decode(&w.signer)
+                    .filter(|b| b.len() == 32)
+                    .unwrap_or_else(|| fail("witness signer is not 32 bytes of hex"));
+                let mut kb = [0u8; 32];
+                kb.copy_from_slice(&key_bytes);
+                let verifying = VerifyingKey::from_bytes(&kb)
+                    .unwrap_or_else(|_| fail("witness signer is not a valid public key"));
+                let sig_bytes = hex_decode(&w.signature)
+                    .filter(|b| b.len() == 64)
+                    .unwrap_or_else(|| fail("witness signature is not 64 bytes of hex"));
+                let mut sb = [0u8; 64];
+                sb.copy_from_slice(&sig_bytes);
+                let sig = Signature::from_bytes(&sb);
+                if verifying.verify(&witness_body(&w.head), &sig).is_err() {
+                    fail("witness signature does not verify");
+                }
+                println!("- witnessed: {} over head {}", w.signer, w.head);
+                witnesses += 1;
+            }
         }
-        if log_line_hash(&line.prev, &line.entry) != line.hash {
-            fail(&format!("log entry {} does not hash to its line", line.entry.seq));
-        }
-        println!("- {}: {}", line.entry.seq, line.entry.name);
-        prev = line.hash.clone();
     }
-    println!("log verified: {} entries, chain unbroken", lines.len());
+    println!(
+        "log verified: {} entries, {} witness(es), chain unbroken",
+        entries, witnesses
+    );
 }
 
 
@@ -975,6 +1102,7 @@ fn edition_usage() -> ! {
     eprintln!("  grower edition pack <derivation.json> <capsule-dir> [--key <key-file>]");
     eprintln!("  grower [--store DIR] edition accept <capsule-dir> <log-file> [--trust <trust-file> | --allow-unsigned]");
     eprintln!("  grower edition log <log-file>");
+    eprintln!("  grower edition witness <log-file> <key-file>");
     exit(2);
 }
 
@@ -993,7 +1121,7 @@ fn usage() -> ! {
     eprintln!("  grower seed write <dir> <out.json> [--exclude <path>]...");
     eprintln!("  grower seed check <dir> <manifest.json> [--exclude <path>]...");
     eprintln!("  grower recipe from-buildinfo <file.buildinfo> <out.json>");
-    eprintln!("  grower edition pack|accept|log ...");
+    eprintln!("  grower edition pack|accept|log|witness ...");
     exit(2);
 }
 
@@ -1073,6 +1201,12 @@ fn main() {
                     );
                 }
                 "log" => cmd_edition_log(Path::new(&rest[2])),
+                "witness" => {
+                    if rest.len() < 4 {
+                        edition_usage();
+                    }
+                    cmd_edition_witness(Path::new(&rest[2]), Path::new(&rest[3]));
+                }
                 _ => edition_usage(),
             }
         }
