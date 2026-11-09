@@ -336,11 +336,257 @@ fn cmd_compost(store: &Path, receipt_path: &Path) {
     }
 }
 
+
+// ---------------------------------------------------------------------
+// Editions: sealed capsules that travel by wire or by hand and are
+// accepted only by reproduction. A capsule carries a derivation and
+// its inputs, rewritten to point inside the capsule, plus a manifest
+// pinning every file and the outputs the derivation must produce.
+// Accepting an edition means growing it again and matching those
+// outputs exactly, then chaining a line into the append-only log:
+// each line carries the hash of the line before it.
+
+#[derive(Debug, Serialize, Deserialize)]
+struct CapsuleFile {
+    path: String,
+    sha256: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct Manifest {
+    name: String,
+    need: String,
+    derivation_sha256: String,
+    grower: String,
+    files: Vec<CapsuleFile>,
+    outputs: Vec<ReceiptOutput>,
+}
+
+fn run_self(store: &Path, deriv_path: &Path) -> Receipt {
+    let exe = env::current_exe().unwrap_or_else(|e| fail(&format!("cannot find self: {e}")));
+    let output = Command::new(&exe)
+        .arg("--store")
+        .arg(store)
+        .arg("grow")
+        .arg(deriv_path)
+        .output()
+        .unwrap_or_else(|e| fail(&format!("cannot run growth: {e}")));
+    if !output.status.success() {
+        fail(&format!(
+            "growth failed: {}",
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
+    }
+    let receipts = store.join("receipts");
+    let mut found: Option<Receipt> = None;
+    if let Ok(entries) = fs::read_dir(&receipts) {
+        for entry in entries.flatten() {
+            if let Ok(raw) = fs::read(entry.path()) {
+                if let Ok(r) = serde_json::from_slice::<Receipt>(&raw) {
+                    if found.is_none() {
+                        found = Some(r);
+                    }
+                }
+            }
+        }
+    }
+    found.unwrap_or_else(|| fail("growth wrote no receipt"))
+}
+
+fn cmd_edition_pack(deriv_path: &Path, capsule_dir: &Path) {
+    let (deriv, _hash) = load_derivation(deriv_path);
+    for input in &deriv.inputs {
+        let p = input_path(deriv_path, &input.path);
+        let actual = sha256_file(&p)
+            .unwrap_or_else(|e| fail(&format!("cannot read input {}: {e}", p.display())));
+        if actual != input.sha256 {
+            fail(&format!(
+                "gate: input {} hashes to {actual}, derivation pins {}",
+                input.path, input.sha256
+            ));
+        }
+    }
+
+    // Grow once into a scratch store to learn the outputs.
+    let scratch = env::temp_dir().join(format!("idem-pack-{}", std::process::id()));
+    let receipt = run_self(&scratch, deriv_path);
+    let _ = fs::remove_dir_all(&scratch);
+
+    // Seal the capsule: inputs under files/<i>, the derivation
+    // rewritten to point at them, the manifest over everything.
+    let files_dir = capsule_dir.join("files");
+    fs::create_dir_all(&files_dir)
+        .unwrap_or_else(|e| fail(&format!("cannot create capsule: {e}")));
+    let raw = fs::read(deriv_path).unwrap_or_else(|e| fail(&format!("cannot read derivation: {e}")));
+    let mut value: serde_json::Value =
+        serde_json::from_slice(&raw).unwrap_or_else(|e| fail(&format!("derivation is not JSON: {e}")));
+    let mut files: Vec<CapsuleFile> = Vec::new();
+    for (i, input) in deriv.inputs.iter().enumerate() {
+        let capsule_path = format!("files/{i}");
+        fs::copy(
+            input_path(deriv_path, &input.path),
+            capsule_dir.join(&capsule_path),
+        )
+        .unwrap_or_else(|e| fail(&format!("cannot seal input {}: {e}", input.path)));
+        files.push(CapsuleFile {
+            path: capsule_path.clone(),
+            sha256: input.sha256.clone(),
+        });
+        value["inputs"][i]["path"] = serde_json::Value::String(capsule_path);
+    }
+    let capsule_deriv = serde_json::to_string_pretty(&value).unwrap() + "\n";
+    fs::write(capsule_dir.join("derivation.json"), &capsule_deriv)
+        .unwrap_or_else(|e| fail(&format!("cannot write capsule derivation: {e}")));
+    let deriv_hash = sha256_bytes(capsule_deriv.as_bytes());
+
+    let manifest = Manifest {
+        name: receipt.name.clone(),
+        need: receipt.need.clone(),
+        derivation_sha256: deriv_hash,
+        grower: format!("grower {}", env!("CARGO_PKG_VERSION")),
+        files,
+        outputs: receipt.outputs,
+    };
+    let text = serde_json::to_string_pretty(&manifest).unwrap();
+    fs::write(capsule_dir.join("manifest.json"), text + "\n")
+        .unwrap_or_else(|e| fail(&format!("cannot write manifest: {e}")));
+    println!(
+        "packed: {} into {} (derivation {})",
+        manifest.name,
+        capsule_dir.display(),
+        manifest.derivation_sha256
+    );
+    for o in &manifest.outputs {
+        println!("- {} -> {}", o.name, o.sha256);
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct LogEntry {
+    seq: u64,
+    name: String,
+    manifest_sha256: String,
+    outputs: Vec<ReceiptOutput>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct LogLine {
+    prev: String,
+    entry: LogEntry,
+    hash: String,
+}
+
+fn log_line_hash(prev: &str, entry: &LogEntry) -> String {
+    let body = serde_json::to_string(entry).unwrap();
+    sha256_bytes(format!("{prev}:{body}").as_bytes())
+}
+
+fn read_log(path: &Path) -> Vec<LogLine> {
+    if !path.exists() {
+        return Vec::new();
+    }
+    let text = fs::read_to_string(path).unwrap_or_else(|e| fail(&format!("cannot read log: {e}")));
+    let mut out = Vec::new();
+    for line in text.lines() {
+        if line.trim().is_empty() {
+            continue;
+        }
+        let parsed: LogLine = serde_json::from_str(line)
+            .unwrap_or_else(|e| fail(&format!("log line is unreadable: {e}")));
+        out.push(parsed);
+    }
+    out
+}
+
+fn cmd_edition_accept(store: &Path, capsule_dir: &Path, log_path: &Path) {
+    let manifest_raw = fs::read(capsule_dir.join("manifest.json"))
+        .unwrap_or_else(|e| fail(&format!("cannot read manifest: {e}")));
+    let manifest: Manifest = serde_json::from_slice(&manifest_raw)
+        .unwrap_or_else(|e| fail(&format!("manifest is unreadable: {e}")));
+
+    // The capsule must answer to its manifest, file by file.
+    let deriv_bytes = fs::read(capsule_dir.join("derivation.json"))
+        .unwrap_or_else(|e| fail(&format!("cannot read capsule derivation: {e}")));
+    if sha256_bytes(&deriv_bytes) != manifest.derivation_sha256 {
+        fail("capsule derivation does not answer to its manifest");
+    }
+    for f in &manifest.files {
+        let actual = sha256_file(&capsule_dir.join(&f.path))
+            .unwrap_or_else(|e| fail(&format!("cannot read capsule file {}: {e}", f.path)));
+        if actual != f.sha256 {
+            fail(&format!(
+                "capsule file {} hashes to {actual}, manifest pins {}",
+                f.path, f.sha256
+            ));
+        }
+    }
+
+    // Acceptance is reproduction: grow it again, compare the outputs.
+    let receipt = run_self(store, &capsule_dir.join("derivation.json"));
+    let same = receipt.outputs.len() == manifest.outputs.len()
+        && receipt
+            .outputs
+            .iter()
+            .zip(manifest.outputs.iter())
+            .all(|(a, b)| a.name == b.name && a.sha256 == b.sha256);
+    if !same {
+        fail("edition did not reproduce the outputs its manifest commits to");
+    }
+
+    // Chain the acceptance into the log.
+    let lines = read_log(log_path);
+    let prev = lines
+        .last()
+        .map(|l| l.hash.clone())
+        .unwrap_or_else(|| "GENESIS".to_string());
+    let entry = LogEntry {
+        seq: lines.len() as u64 + 1,
+        name: manifest.name.clone(),
+        manifest_sha256: sha256_bytes(&manifest_raw),
+        outputs: manifest.outputs,
+    };
+    let hash = log_line_hash(&prev, &entry);
+    let line = LogLine { prev, entry, hash };
+    let mut text = fs::read_to_string(log_path).unwrap_or_default();
+    text.push_str(&serde_json::to_string(&line).unwrap());
+    text.push('\n');
+    fs::write(log_path, text).unwrap_or_else(|e| fail(&format!("cannot append to log: {e}")));
+    println!(
+        "accepted: {} as log entry {} ({})",
+        line.entry.name, line.entry.seq, line.hash
+    );
+}
+
+fn cmd_edition_log(log_path: &Path) {
+    let lines = read_log(log_path);
+    let mut prev = "GENESIS".to_string();
+    for line in &lines {
+        if line.prev != prev {
+            fail(&format!("log chain broken at entry {}", line.entry.seq));
+        }
+        if log_line_hash(&line.prev, &line.entry) != line.hash {
+            fail(&format!("log entry {} does not hash to its line", line.entry.seq));
+        }
+        println!("- {}: {}", line.entry.seq, line.entry.name);
+        prev = line.hash.clone();
+    }
+    println!("log verified: {} entries, chain unbroken", lines.len());
+}
+
+fn edition_usage() -> ! {
+    eprintln!("usage:");
+    eprintln!("  grower edition pack <derivation.json> <capsule-dir>");
+    eprintln!("  grower [--store DIR] edition accept <capsule-dir> <log-file>");
+    eprintln!("  grower edition log <log-file>");
+    exit(2);
+}
+
 fn usage() -> ! {
     eprintln!("usage:");
     eprintln!("  grower [--store DIR] grow <derivation.json>");
     eprintln!("  grower [--store DIR] verify <receipt.json> [derivation.json]");
     eprintln!("  grower [--store DIR] compost <receipt.json>");
+    eprintln!("  grower edition pack|accept|log ...");
     exit(2);
 }
 
@@ -358,6 +604,27 @@ fn main() {
             rest.get(2).map(|s| Path::new(s.as_str())),
         ),
         "compost" => cmd_compost(&args.store, Path::new(&rest[1])),
+        "edition" => {
+            if rest.len() < 3 {
+                edition_usage();
+            }
+            match rest[1].as_str() {
+                "pack" => {
+                    if rest.len() < 4 {
+                        edition_usage();
+                    }
+                    cmd_edition_pack(Path::new(&rest[2]), Path::new(&rest[3]));
+                }
+                "accept" => {
+                    if rest.len() < 4 {
+                        edition_usage();
+                    }
+                    cmd_edition_accept(&args.store, Path::new(&rest[2]), Path::new(&rest[3]));
+                }
+                "log" => cmd_edition_log(Path::new(&rest[2])),
+                _ => edition_usage(),
+            }
+        }
         _ => usage(),
     }
 }

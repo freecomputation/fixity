@@ -18,7 +18,8 @@ first form. This repository holds the layer underneath: the grower.
 
 The grower is the small core that grows everything else, kept small
 enough for one person to read end to end. Version 0 is one Rust
-binary with three commands.
+binary. It grows, verifies, and composts, and it packs and accepts
+editions.
 
 A derivation is a JSON file: a name, the need that called it, its
 inputs each pinned by sha256, its build steps as plain argument lists
@@ -45,13 +46,31 @@ environment variable, or ./store by default. Inside it: objects named
 by their sha256, one receipt per derivation hash, and the work
 directories kept for inspection.
 
+## Editions
+
+"grower edition pack <derivation> <capsule-dir>" seals a derivation
+and its inputs into a capsule: the inputs copied in, the derivation
+rewritten to point at them, and a manifest pinning every file by hash
+together with the outputs the derivation must produce, learned by
+growing it once at pack time.
+
+"grower edition accept <capsule-dir> <log-file>" is the gate an
+edition passes when it arrives, by wire or by hand. The capsule must
+answer to its manifest file by file; then it is grown again, and the
+fresh outputs must match the manifest's committed outputs exactly -
+acceptance by reproduction, not by signature. An accepted edition is
+chained into an append-only log, each line carrying the hash of the
+line before it, and "grower edition log <log-file>" verifies the
+chain end to end. A capsule with one byte changed is refused before
+anything grows.
+
 ## The acceptance test
 
 The grower recipe grows the grower from its own source. Built with
 rustc 1.99.1 and the dependency versions pinned in grower/Cargo.lock,
 the grown binary and the binary that grew it hash identically:
 
-b176620ff72e30a858b1d96ae731b06ad60d8879fcc6d9e77d23f0161f7eac7e
+49f1a8cc55dbaf2cc6688daa3d52e0d3d70031222d6248adc8b5d933330ba04c
 
 A second growth of the same derivation reproduces that hash, and a
 one-line change to any pinned input makes the gate refuse the build.
