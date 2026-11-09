@@ -1,0 +1,56 @@
+{
+  "name": "broker",
+  "need": "the power structure as a machine: intelligence proposes, the owner disposes",
+  "inputs": [
+    {
+      "path": "../broker/Cargo.toml",
+      "sha256": "349dde2ac99ebbe8656999c57610b537460959e2c7d8a215eff6c0fd217414db"
+    },
+    {
+      "path": "../broker/Cargo.lock",
+      "sha256": "c519293bc9f3b0c95435466f95bc7c5a971caca083d5f80fb26a85030c5e23b7"
+    },
+    {
+      "path": "../broker/src/main.rs",
+      "sha256": "59d9336dd1332b72f20adca9f4f6834362d9d34bbc146d1991df1e721660c7ff"
+    }
+  ],
+  "steps": [
+    [
+      "mkdir",
+      "-p",
+      "src"
+    ],
+    [
+      "cp",
+      "{in0}",
+      "Cargo.toml"
+    ],
+    [
+      "cp",
+      "{in1}",
+      "Cargo.lock"
+    ],
+    [
+      "cp",
+      "{in2}",
+      "src/main.rs"
+    ],
+    [
+      "cargo",
+      "build",
+      "--release",
+      "--offline",
+      "--target-dir",
+      "target"
+    ],
+    [
+      "cp",
+      "target/release/broker",
+      "{out}/broker"
+    ]
+  ],
+  "outputs": [
+    "broker"
+  ]
+}

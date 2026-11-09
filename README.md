@@ -86,6 +86,39 @@ this file alone. recipes/hello-buildinfo.json is the worked example,
 transcribed from the signed buildinfo of hello 2.12.3-1, kept beside
 it in recipes/material/.
 
+## The runner
+
+The grower decides what may be built. The runner - runner/, on
+Wasmtime - decides what built code may do while it runs, and the
+answer is: arithmetic, inside a meter, with no hands. A grown module
+exports "main", takes nothing, and returns one i32. It runs under a
+fuel budget and a memory cap, and the runner's linker is empty on
+purpose: a module that asks for an import is asking for authority,
+and none is on offer - no files, no network, no clock. Runs are
+deterministic: the same module under the same budget returns the
+same result and the same fuel reading. "runner run --object <sha256>
+--store <dir>" executes a module straight out of a grower store, so
+the path from derivation to sandboxed execution never leaves the
+system's own discipline. The four guests in runner/examples/ each
+demonstrate one wall: the honest one computes, the runaway dies by
+fuel, the glutton is refused by the memory cap, the petitioner is
+refused at the door for asking.
+
+## The broker
+
+Intelligence proposes; the owner disposes - as a machine, not a
+policy. The broker - broker/ - classifies every proposed action by
+its own table; the proposer cannot relabel an action to slip its
+class. Routine actions (a note into the outbox) are standing orders
+and execute on proposal. Consequential actions (a growth) run the
+charter's two-attempt sequence: the first proposal is answered with
+a signed warning and nothing happens; the action executes only when
+the owner confirms it in a separate act - "broker confirm" mints a
+one-shot token bound to the action's hash, ten minutes to live - and
+"broker execute" spends it. A spent, expired, or foreign token is
+refused, and proposing an executed action again starts the sequence
+over. Every transition chains into a hash-linked audit log.
+
 ## The seed manifest
 
 The size law binds the seed and the grower, so what the seed carries
@@ -106,7 +139,17 @@ the grown binary and the binary that grew it hash identically:
 
 A second growth of the same derivation reproduces that hash, and a
 one-line change to any pinned input makes the gate refuse the build.
-That is the whole claim of the system, demonstrated at the smallest
+The broker and the runner grow the same way, from recipes/broker.json
+(broker 27d19a11dd952c1a41240810245ea51624c780527113c7086020fb44c33a98f0)
+and recipes/runner.json (runner
+ecbb830b424414ef353593ea505e389ff98d4fdf10e789b518962066cbb2ddc6) -
+every tool the system trusts is one it can regrow from pinned source.
+The runner's hash is stated under one condition: its dependency tree
+includes a code generator that embeds the build directory in the
+binary, so the runner recipe is grown with RUSTFLAGS carrying
+--remap-path-prefix <build-dir>=/idem. With the prefix remapped, the
+grown runner and a direct build hash identically; without it, the
+two differ only in those embedded paths. That is the whole claim of the system, demonstrated at the smallest
 scale before anything larger is built on it.
 
 ## Building

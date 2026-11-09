@@ -1,0 +1,20 @@
+{
+  "name": "answer-module",
+  "need": "a grown module for the runner: arithmetic that asks for nothing",
+  "inputs": [
+    {
+      "path": "material/answer.wasm",
+      "sha256": "c6ff18f16b81d44d1c307b8364600d87325b0a7db047df52b2cf6de4cf535059"
+    }
+  ],
+  "steps": [
+    [
+      "cp",
+      "{in0}",
+      "{out}/answer.wasm"
+    ]
+  ],
+  "outputs": [
+    "answer.wasm"
+  ]
+}

@@ -1,0 +1,13 @@
+[package]
+name = "runner"
+version = "0.1.0"
+edition = "2021"
+license = "AGPL-3.0-only"
+
+[dependencies]
+wasmtime = "38"
+wat = "1"
+
+[profile.release]
+debug = false
+incremental = false
