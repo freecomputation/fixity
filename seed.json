@@ -8,8 +8,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 8628,
-      "sha256": "a3e495128ae7df4ea811fbfd60582a98a6b246678bc7c443dfcf613654713021"
+      "bytes": 8923,
+      "sha256": "926e6230d809ac63409ed86d094d5dcbacd44699e1ad4346a3fa177f63cc608d"
     },
     {
       "path": "broker/Cargo.lock",
@@ -38,8 +38,8 @@
     },
     {
       "path": "grower/src/main.rs",
-      "bytes": 45076,
-      "sha256": "d4034150b7c7615ce1590eecf9f5051811799a0b3b4744f739c3acb31160216e"
+      "bytes": 47898,
+      "sha256": "5d48c57c92a12e44260771915f3538b9241a8b15ed459f5ff3fbef44e1e3a44d"
     },
     {
       "path": "recipes/answer-module.json",
@@ -54,12 +54,12 @@
     {
       "path": "recipes/grower.json",
       "bytes": 1002,
-      "sha256": "77ba107c7ec500ee04ac78d11842221f5157e458ce97d09ef65c63cfa35d86bd"
+      "sha256": "3bdc688cb075ee854df0e78020fd7cbd983e362d401ece6e6f4be37eaaa3eda9"
     },
     {
       "path": "recipes/hello-buildinfo.json",
-      "bytes": 18954,
-      "sha256": "dc47c532c3651ab1d83e23910ad61f2f20329321f87abbc36ed2df0d8844acc0"
+      "bytes": 19440,
+      "sha256": "d6c3c45971bd721ce3dded8cc59d15615b065ff65f1e88f00b2b5705a74b9a69"
     },
     {
       "path": "recipes/hello.json",
@@ -75,6 +75,11 @@
       "path": "recipes/material/hello.txt",
       "bytes": 37,
       "sha256": "b26d517d24e99b01ab8aee4a748d606acbb5681369a97ca60788f2e2320deb1f"
+    },
+    {
+      "path": "recipes/material/hello_2.12.3-1.dsc",
+      "bytes": 1759,
+      "sha256": "0d7ca90a2ed69d48974a93a2248c36ae66f9afa35b646426ed87f217bb8da0c3"
     },
     {
       "path": "recipes/material/hello_2.12.3-1_amd64.buildinfo",
@@ -122,6 +127,6 @@
       "sha256": "7ca5431c8b9482436cbc5421259734d44fae530fb5e064df351dc32c7aa449f7"
     }
   ],
-  "total_bytes": 171888,
+  "total_bytes": 177250,
   "note": "Every file the seed carries, by hash and size. Directories named .git, target, and store are never seed members, and neither is this manifest itself. The size law binds the seed and the grower: this total is the number that law governs."
 }

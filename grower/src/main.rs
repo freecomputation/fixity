@@ -872,6 +872,8 @@ struct BuildInfoRecipe {
     build_date: String,
     outputs: Vec<ReceiptOutput>,
     build_depends: Vec<BuildDep>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    source_inputs: Option<Vec<ReceiptOutput>>,
     inputs_known: bool,
     note: String,
 }
@@ -911,7 +913,7 @@ fn field<'a>(fields: &'a [(String, String)], name: &str) -> &'a str {
         .unwrap_or("")
 }
 
-fn cmd_recipe_from_buildinfo(buildinfo_path: &Path, out_path: &Path) {
+fn cmd_recipe_from_buildinfo(buildinfo_path: &Path, out_path: &Path, dsc_path: Option<&Path>) {
     let raw = fs::read_to_string(buildinfo_path)
         .unwrap_or_else(|e| fail(&format!("cannot read buildinfo: {e}")));
     let fields = parse_buildinfo(&raw);
@@ -951,6 +953,52 @@ fn cmd_recipe_from_buildinfo(buildinfo_path: &Path, out_path: &Path) {
             version,
         });
     }
+    // The .dsc is the other half of the receipt: it pins the source
+    // files themselves. With both files, the recipe knows its inputs
+    // as well as its outputs and its environment.
+    let (source_inputs, inputs_known, note) = match dsc_path {
+        Some(dsc_path) => {
+            let dsc_raw = fs::read_to_string(dsc_path)
+                .unwrap_or_else(|e| fail(&format!("cannot read dsc: {e}")));
+            let dsc_fields = parse_buildinfo(&dsc_raw);
+            let dsc_source = field(&dsc_fields, "Source");
+            if dsc_source != source {
+                fail(&format!(
+                    "dsc names source {dsc_source}, buildinfo names {source} - not two halves of one build"
+                ));
+            }
+            let dsc_version = field(&dsc_fields, "Version");
+            if dsc_version != field(&fields, "Version") {
+                fail(&format!(
+                    "dsc names version {dsc_version}, buildinfo names {} - not two halves of one build",
+                    field(&fields, "Version")
+                ));
+            }
+            let mut inputs = Vec::new();
+            for line in field(&dsc_fields, "Checksums-Sha256").lines() {
+                let parts: Vec<&str> = line.split_whitespace().collect();
+                if parts.len() == 3 {
+                    inputs.push(ReceiptOutput {
+                        name: parts[2].to_string(),
+                        sha256: parts[0].to_string(),
+                    });
+                }
+            }
+            if inputs.is_empty() {
+                fail("dsc carries no Checksums-Sha256 source files");
+            }
+            (
+                Some(inputs),
+                true,
+                "Prototype receipt transcribed from a Debian .buildinfo and its .dsc. The buildinfo pins the outputs and the environment (exact versions); the dsc pins the source inputs. Inputs, environment, and outputs are all pinned - the two files together are the complete receipt this prototype reads.".to_string(),
+            )
+        }
+        None => (
+            None,
+            false,
+            "Prototype receipt transcribed from a Debian .buildinfo. It pins the build's outputs and environment (exact versions). The source inputs are pinned by the package's .dsc, not by this file, so a grower derivation cannot be sealed from this file alone.".to_string(),
+        ),
+    };
     let recipe = BuildInfoRecipe {
         format: "idem-buildinfo-recipe/0".to_string(),
         version: field(&fields, "Version").to_string(),
@@ -960,19 +1008,30 @@ fn cmd_recipe_from_buildinfo(buildinfo_path: &Path, out_path: &Path) {
         source,
         outputs,
         build_depends,
-        inputs_known: false,
-        note: "Prototype receipt transcribed from a Debian .buildinfo. It pins the build's outputs and environment (exact versions). The source inputs are pinned by the package's .dsc, not by this file, so a grower derivation cannot be sealed from this file alone.".to_string(),
+        source_inputs,
+        inputs_known,
+        note,
     };
     let text = serde_json::to_string_pretty(&recipe).unwrap();
     fs::write(out_path, text + "\n")
         .unwrap_or_else(|e| fail(&format!("cannot write recipe: {e}")));
-    println!(
-        "recipe: {} {} - {} outputs, {} build dependencies pinned",
-        recipe.source,
-        recipe.version,
-        recipe.outputs.len(),
-        recipe.build_depends.len()
-    );
+    match &recipe.source_inputs {
+        Some(inputs) => println!(
+            "recipe: {} {} - {} source inputs, {} outputs, {} build dependencies pinned",
+            recipe.source,
+            recipe.version,
+            inputs.len(),
+            recipe.outputs.len(),
+            recipe.build_depends.len()
+        ),
+        None => println!(
+            "recipe: {} {} - {} outputs, {} build dependencies pinned",
+            recipe.source,
+            recipe.version,
+            recipe.outputs.len(),
+            recipe.build_depends.len()
+        ),
+    }
     for o in &recipe.outputs {
         println!("- {} -> {}", o.name, o.sha256);
     }
@@ -1120,7 +1179,7 @@ fn usage() -> ! {
     eprintln!("  grower keygen <key-file>");
     eprintln!("  grower seed write <dir> <out.json> [--exclude <path>]...");
     eprintln!("  grower seed check <dir> <manifest.json> [--exclude <path>]...");
-    eprintln!("  grower recipe from-buildinfo <file.buildinfo> <out.json>");
+    eprintln!("  grower recipe from-buildinfo <file.buildinfo> <out.json> [--dsc <file.dsc>]");
     eprintln!("  grower edition pack|accept|log|witness ...");
     exit(2);
 }
@@ -1158,10 +1217,15 @@ fn main() {
         }
         "recipe" => {
             if rest.len() < 4 || rest[1] != "from-buildinfo" {
-                eprintln!("usage: grower recipe from-buildinfo <file.buildinfo> <out.json>");
+                eprintln!("usage: grower recipe from-buildinfo <file.buildinfo> <out.json> [--dsc <file.dsc>]");
                 exit(2);
             }
-            cmd_recipe_from_buildinfo(Path::new(&rest[2]), Path::new(&rest[3]));
+            let dsc = flag_value(rest, "--dsc");
+            cmd_recipe_from_buildinfo(
+                Path::new(&rest[2]),
+                Path::new(&rest[3]),
+                dsc.as_deref().map(Path::new),
+            );
         }
         "grow" => cmd_grow(&args.store, Path::new(&rest[1])),
         "verify" => cmd_verify(
