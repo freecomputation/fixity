@@ -58,11 +58,21 @@ growing it once at pack time.
 edition passes when it arrives, by wire or by hand. The capsule must
 answer to its manifest file by file; then it is grown again, and the
 fresh outputs must match the manifest's committed outputs exactly -
-acceptance by reproduction, not by signature. An accepted edition is
+acceptance by reproduction. An accepted edition is
 chained into an append-only log, each line carrying the hash of the
 line before it, and "grower edition log <log-file>" verifies the
 chain end to end. A capsule with one byte changed is refused before
 anything grows.
+
+Reproduction says what a capsule is; a signature says who stands
+behind it, and an edition should answer both questions. "grower
+keygen <key-file>" writes an Ed25519 key pair. "edition pack
+--key <key-file>" signs the manifest, and "edition accept --trust
+<trust-file>" refuses a signed capsule whose signer the trust file
+does not name, or whose signature does not verify, before anything
+grows. An unsigned capsule is refused unless the owner passes
+--allow-unsigned for that capsule, out loud. The log records the
+signer of every accepted edition.
 
 ## The acceptance test
 
@@ -70,7 +80,7 @@ The grower recipe grows the grower from its own source. Built with
 rustc 1.99.1 and the dependency versions pinned in grower/Cargo.lock,
 the grown binary and the binary that grew it hash identically:
 
-49f1a8cc55dbaf2cc6688daa3d52e0d3d70031222d6248adc8b5d933330ba04c
+129f9329db24a8ff45662cdab16f101f3e5749c862d21585b02bc6bc8e8e7f47
 
 A second growth of the same derivation reproduces that hash, and a
 one-line change to any pinned input makes the gate refuse the build.

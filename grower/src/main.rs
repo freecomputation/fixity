@@ -21,6 +21,7 @@
 //   work/<deriv>/           scratch: in/, out/ (kept for inspection)
 
 use serde::{Deserialize, Serialize};
+use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 use std::env;
@@ -85,6 +86,25 @@ fn sha256_bytes(bytes: &[u8]) -> String {
     let mut h = Sha256::new();
     h.update(bytes);
     format!("{:x}", h.finalize())
+}
+
+fn hex_encode(bytes: &[u8]) -> String {
+    bytes.iter().map(|b| format!("{b:02x}")).collect()
+}
+
+fn hex_decode(text: &str) -> Option<Vec<u8>> {
+    let text = text.trim();
+    if !text.len().is_multiple_of(2) {
+        return None;
+    }
+    let mut out = Vec::with_capacity(text.len() / 2);
+    let bytes = text.as_bytes();
+    for i in (0..bytes.len()).step_by(2) {
+        let hi = (bytes[i] as char).to_digit(16)?;
+        let lo = (bytes[i + 1] as char).to_digit(16)?;
+        out.push((hi * 16 + lo) as u8);
+    }
+    Some(out)
 }
 
 fn fail(msg: &str) -> ! {
@@ -360,6 +380,69 @@ struct Manifest {
     grower: String,
     files: Vec<CapsuleFile>,
     outputs: Vec<ReceiptOutput>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    signer: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    signature: Option<String>,
+}
+
+/// The bytes a signature answers to: every committed field of the
+/// manifest, one per line, in a fixed order. Signer and signature are
+/// not part of it, for the obvious reason.
+fn manifest_body(m: &Manifest) -> Vec<u8> {
+    let mut body = String::new();
+    body.push_str(&format!("name: {}\n", m.name));
+    body.push_str(&format!("need: {}\n", m.need));
+    body.push_str(&format!("derivation: {}\n", m.derivation_sha256));
+    body.push_str(&format!("grower: {}\n", m.grower));
+    for f in &m.files {
+        body.push_str(&format!("file: {} {}\n", f.path, f.sha256));
+    }
+    for o in &m.outputs {
+        body.push_str(&format!("output: {} {}\n", o.name, o.sha256));
+    }
+    body.into_bytes()
+}
+
+fn load_signing_key(path: &Path) -> SigningKey {
+    let text = fs::read_to_string(path)
+        .unwrap_or_else(|e| fail(&format!("cannot read key file {}: {e}", path.display())));
+    for line in text.lines() {
+        if let Some(hex) = line.strip_prefix("idem-ed25519-secret ") {
+            let bytes = hex_decode(hex)
+                .filter(|b| b.len() == 32)
+                .unwrap_or_else(|| fail("key file secret is not 32 bytes of hex"));
+            let mut seed = [0u8; 32];
+            seed.copy_from_slice(&bytes);
+            return SigningKey::from_bytes(&seed);
+        }
+    }
+    fail("key file carries no idem-ed25519-secret line")
+}
+
+fn cmd_keygen(path: &Path) {
+    if path.exists() {
+        fail(&format!("key file {} already exists - refusing to overwrite a key", path.display()));
+    }
+    let mut seed = [0u8; 32];
+    let mut urandom = fs::File::open("/dev/urandom")
+        .unwrap_or_else(|e| fail(&format!("cannot open /dev/urandom: {e}")));
+    std::io::Read::read_exact(&mut urandom, &mut seed)
+        .unwrap_or_else(|e| fail(&format!("cannot read randomness: {e}")));
+    let key = SigningKey::from_bytes(&seed);
+    let public = hex_encode(key.verifying_key().as_bytes());
+    let text = format!(
+        "idem-ed25519-secret {}\nidem-ed25519-public {public}\n",
+        hex_encode(&seed)
+    );
+    fs::write(path, text).unwrap_or_else(|e| fail(&format!("cannot write key file: {e}")));
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let _ = fs::set_permissions(path, fs::Permissions::from_mode(0o600));
+    }
+    println!("key written: {}", path.display());
+    println!("public key: {public}");
 }
 
 fn run_self(store: &Path, deriv_path: &Path) -> Receipt {
@@ -393,7 +476,7 @@ fn run_self(store: &Path, deriv_path: &Path) -> Receipt {
     found.unwrap_or_else(|| fail("growth wrote no receipt"))
 }
 
-fn cmd_edition_pack(deriv_path: &Path, capsule_dir: &Path) {
+fn cmd_edition_pack(deriv_path: &Path, capsule_dir: &Path, sign_key: Option<&Path>) {
     let (deriv, _hash) = load_derivation(deriv_path);
     for input in &deriv.inputs {
         let p = input_path(deriv_path, &input.path);
@@ -439,14 +522,22 @@ fn cmd_edition_pack(deriv_path: &Path, capsule_dir: &Path) {
         .unwrap_or_else(|e| fail(&format!("cannot write capsule derivation: {e}")));
     let deriv_hash = sha256_bytes(capsule_deriv.as_bytes());
 
-    let manifest = Manifest {
+    let mut manifest = Manifest {
         name: receipt.name.clone(),
         need: receipt.need.clone(),
         derivation_sha256: deriv_hash,
         grower: format!("grower {}", env!("CARGO_PKG_VERSION")),
         files,
         outputs: receipt.outputs,
+        signer: None,
+        signature: None,
     };
+    if let Some(key_path) = sign_key {
+        let key = load_signing_key(key_path);
+        let signature = key.sign(&manifest_body(&manifest));
+        manifest.signer = Some(hex_encode(key.verifying_key().as_bytes()));
+        manifest.signature = Some(hex_encode(&signature.to_bytes()));
+    }
     let text = serde_json::to_string_pretty(&manifest).unwrap();
     fs::write(capsule_dir.join("manifest.json"), text + "\n")
         .unwrap_or_else(|e| fail(&format!("cannot write manifest: {e}")));
@@ -456,6 +547,10 @@ fn cmd_edition_pack(deriv_path: &Path, capsule_dir: &Path) {
         capsule_dir.display(),
         manifest.derivation_sha256
     );
+    match &manifest.signer {
+        Some(signer) => println!("signed by: {signer}"),
+        None => println!("unsigned - acceptance will need --allow-unsigned"),
+    }
     for o in &manifest.outputs {
         println!("- {} -> {}", o.name, o.sha256);
     }
@@ -467,6 +562,8 @@ struct LogEntry {
     name: String,
     manifest_sha256: String,
     outputs: Vec<ReceiptOutput>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    signer: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -498,11 +595,56 @@ fn read_log(path: &Path) -> Vec<LogLine> {
     out
 }
 
-fn cmd_edition_accept(store: &Path, capsule_dir: &Path, log_path: &Path) {
+fn cmd_edition_accept(store: &Path, capsule_dir: &Path, log_path: &Path, trust: Option<&Path>, allow_unsigned: bool) {
     let manifest_raw = fs::read(capsule_dir.join("manifest.json"))
         .unwrap_or_else(|e| fail(&format!("cannot read manifest: {e}")));
     let manifest: Manifest = serde_json::from_slice(&manifest_raw)
         .unwrap_or_else(|e| fail(&format!("manifest is unreadable: {e}")));
+
+    // Who stands behind this capsule, checked before anything grows.
+    // A signature must verify, and its signer must be named in the
+    // trust file. An unsigned capsule is accepted only when the owner
+    // says so for this capsule, out loud, with --allow-unsigned.
+    match (&manifest.signer, &manifest.signature) {
+        (Some(signer), Some(signature)) => {
+            let trust_path = trust.unwrap_or_else(|| {
+                fail("capsule is signed but no --trust file was given - name the keys you accept")
+            });
+            let trust_text = fs::read_to_string(trust_path)
+                .unwrap_or_else(|e| fail(&format!("cannot read trust file: {e}")));
+            let trusted: Vec<String> = trust_text
+                .lines()
+                .map(|l| l.trim().to_lowercase())
+                .filter(|l| !l.is_empty() && !l.starts_with('#'))
+                .collect();
+            if !trusted.iter().any(|t| t == &signer.to_lowercase()) {
+                fail(&format!("signer {signer} is not in the trust file"));
+            }
+            let key_bytes = hex_decode(signer)
+                .filter(|b| b.len() == 32)
+                .unwrap_or_else(|| fail("manifest signer is not 32 bytes of hex"));
+            let mut kb = [0u8; 32];
+            kb.copy_from_slice(&key_bytes);
+            let verifying = VerifyingKey::from_bytes(&kb)
+                .unwrap_or_else(|_| fail("manifest signer is not a valid public key"));
+            let sig_bytes = hex_decode(signature)
+                .filter(|b| b.len() == 64)
+                .unwrap_or_else(|| fail("manifest signature is not 64 bytes of hex"));
+            let mut sb = [0u8; 64];
+            sb.copy_from_slice(&sig_bytes);
+            let sig = Signature::from_bytes(&sb);
+            if verifying.verify(&manifest_body(&manifest), &sig).is_err() {
+                fail("manifest signature does not verify");
+            }
+            println!("signature verified: {signer}");
+        }
+        _ => {
+            if !allow_unsigned {
+                fail("capsule is unsigned - refusing without --allow-unsigned");
+            }
+            println!("warning: accepting an unsigned capsule on the owner's word");
+        }
+    }
 
     // The capsule must answer to its manifest, file by file.
     let deriv_bytes = fs::read(capsule_dir.join("derivation.json"))
@@ -544,6 +686,7 @@ fn cmd_edition_accept(store: &Path, capsule_dir: &Path, log_path: &Path) {
         name: manifest.name.clone(),
         manifest_sha256: sha256_bytes(&manifest_raw),
         outputs: manifest.outputs,
+        signer: manifest.signer.clone(),
     };
     let hash = log_line_hash(&prev, &entry);
     let line = LogLine { prev, entry, hash };
@@ -575,10 +718,17 @@ fn cmd_edition_log(log_path: &Path) {
 
 fn edition_usage() -> ! {
     eprintln!("usage:");
-    eprintln!("  grower edition pack <derivation.json> <capsule-dir>");
-    eprintln!("  grower [--store DIR] edition accept <capsule-dir> <log-file>");
+    eprintln!("  grower keygen <key-file>");
+    eprintln!("  grower edition pack <derivation.json> <capsule-dir> [--key <key-file>]");
+    eprintln!("  grower [--store DIR] edition accept <capsule-dir> <log-file> [--trust <trust-file> | --allow-unsigned]");
     eprintln!("  grower edition log <log-file>");
     exit(2);
+}
+
+fn flag_value(rest: &[String], flag: &str) -> Option<String> {
+    rest.windows(2)
+        .find(|w| w[0] == flag)
+        .map(|w| w[1].clone())
 }
 
 fn usage() -> ! {
@@ -586,6 +736,7 @@ fn usage() -> ! {
     eprintln!("  grower [--store DIR] grow <derivation.json>");
     eprintln!("  grower [--store DIR] verify <receipt.json> [derivation.json]");
     eprintln!("  grower [--store DIR] compost <receipt.json>");
+    eprintln!("  grower keygen <key-file>");
     eprintln!("  grower edition pack|accept|log ...");
     exit(2);
 }
@@ -597,6 +748,7 @@ fn main() {
         usage();
     }
     match rest[0].as_str() {
+        "keygen" => cmd_keygen(Path::new(&rest[1])),
         "grow" => cmd_grow(&args.store, Path::new(&rest[1])),
         "verify" => cmd_verify(
             &args.store,
@@ -613,13 +765,26 @@ fn main() {
                     if rest.len() < 4 {
                         edition_usage();
                     }
-                    cmd_edition_pack(Path::new(&rest[2]), Path::new(&rest[3]));
+                    let key = flag_value(rest, "--key");
+                    cmd_edition_pack(
+                        Path::new(&rest[2]),
+                        Path::new(&rest[3]),
+                        key.as_deref().map(Path::new),
+                    );
                 }
                 "accept" => {
                     if rest.len() < 4 {
                         edition_usage();
                     }
-                    cmd_edition_accept(&args.store, Path::new(&rest[2]), Path::new(&rest[3]));
+                    let trust = flag_value(rest, "--trust");
+                    let allow_unsigned = rest.iter().any(|a| a == "--allow-unsigned");
+                    cmd_edition_accept(
+                        &args.store,
+                        Path::new(&rest[2]),
+                        Path::new(&rest[3]),
+                        trust.as_deref().map(Path::new),
+                        allow_unsigned,
+                    );
                 }
                 "log" => cmd_edition_log(Path::new(&rest[2])),
                 _ => edition_usage(),
