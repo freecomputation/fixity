@@ -145,6 +145,31 @@ one-shot token bound to the action's hash, ten minutes to live - and
 refused, and proposing an executed action again starts the sequence
 over. Every transition chains into a hash-linked audit log.
 
+## The model service
+
+The proposing half of determination 8 lives at model/. It holds
+no authority: it cannot execute, confirm, or mint a token. It
+drafts actions in the broker's JSON shape and hands them to the
+broker's propose verb, where the standing orders decide. Backends
+sit behind one seam. The scribe is always aboard - deterministic
+drafting from material at hand: notes from text, growth proposals
+from a derivation it has read and checked, and world drafts for
+Optic, where it reads a document through the optic window and
+proposes a mutation back through the same window, to be kept or
+discarded by the owner there. The llama backend wraps a local
+llama.cpp CLI and a GGUF aboard as free-text note drafts, and
+reports itself unavailable on machines that do not carry it - on
+the machine this was built, scribe is aboard and llama is not,
+and the service says so. A network model is never a backend.
+
+Proven end to end with the real binaries: a note the model
+proposed executed at once through the broker, as standing orders
+allow; a growth the model proposed stopped at the broker's
+signed warning with nothing grown; the owner's confirm and
+execute then grew hello at its acceptance hash. The model
+service itself grows bit-identically from recipes/model.json -
+51d0afe0 under rustc 1.99.1 with its pinned dependencies.
+
 ## The seed manifest
 
 The size law binds the seed and the grower, so what the seed carries
