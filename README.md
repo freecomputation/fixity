@@ -86,13 +86,23 @@ this file alone. recipes/hello-buildinfo.json is the worked example,
 transcribed from the signed buildinfo of hello 2.12.3-1, kept beside
 it in recipes/material/.
 
+## The seed manifest
+
+The size law binds the seed and the grower, so what the seed carries
+is a checkable document. "grower seed write <dir> <out.json>" pins
+every file in a tree by hash and size, with the total the law
+governs; "grower seed check <dir> <manifest.json>" walks the tree
+again and names every missing, changed, or extra file. seed.json at
+the root of this repository is the manifest of the seed you are
+reading - run the check against a clone and it answers.
+
 ## The acceptance test
 
 The grower recipe grows the grower from its own source. Built with
 rustc 1.99.1 and the dependency versions pinned in grower/Cargo.lock,
 the grown binary and the binary that grew it hash identically:
 
-df046b7e93a4eeab590189a143abcb14ede29231fe5e33296102901de3bc4bba
+9d2e9a1af1eebc45aa41f24a8a6666c9d59aec6081a42b1a8bbdaba03d1ba6d5
 
 A second growth of the same derivation reproduces that hash, and a
 one-line change to any pinned input makes the gate refuse the build.
