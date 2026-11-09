@@ -94,9 +94,13 @@ keeps to a receipt. The recipe pins the build's outputs by hash and
 its whole environment as exact package versions. It also states its
 own limit in the file: the source inputs are pinned by the package's
 .dsc, not by the .buildinfo, so a derivation cannot be sealed from
-this file alone. recipes/hello-buildinfo.json is the worked example,
-transcribed from the signed buildinfo of hello 2.12.3-1, kept beside
-it in recipes/material/.
+this file alone. Pass "--dsc <file.dsc>" and the converter reads the
+other half: the .dsc must name the same source and version, and its
+pinned source files join the recipe, which then states that its
+inputs are known - inputs, environment, and outputs all pinned, the
+complete receipt. recipes/hello-buildinfo.json is the worked example,
+transcribed from the signed buildinfo and the signed .dsc of hello
+2.12.3-1, both kept beside it in recipes/material/.
 
 ## The runner
 
@@ -147,7 +151,7 @@ The grower recipe grows the grower from its own source. Built with
 rustc 1.99.1 and the dependency versions pinned in grower/Cargo.lock,
 the grown binary and the binary that grew it hash identically:
 
-2a91405b1113ab372c2cee3e2f7ec296afaf0d1fcd824b3a55ca66b09986c5ca
+fbd7b6e84fbd967c1bdc47f11dbd48507e0d70c211f185c646225283f443da49
 
 A second growth of the same derivation reproduces that hash, and a
 one-line change to any pinned input makes the gate refuse the build.
