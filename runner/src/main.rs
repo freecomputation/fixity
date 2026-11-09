@@ -12,12 +12,23 @@
 // Convention: a runnable module exports "main", a function taking
 // nothing and returning one i32.
 //
+// Components (the WASI 0.2 shape) run under the same discipline: a
+// runnable component exports "main", a component function returning
+// one s32, and the component linker is as empty as the core one - a
+// component importing a WASI interface is asking for authority the
+// same way, and none is on offer until a broker grants it. That is
+// the staged path: components now, capabilities by grant later,
+// never ambient.
+//
 //   runner run <file.wasm|file.wat> [--fuel N] [--memory-mb N]
 //   runner run --object <sha256> --store <dir> [--fuel N]
+//   runner run-component <file.wasm|file.wat> [--fuel N] [--memory-mb N]
+//   runner run-component --object <sha256> --store <dir> [--fuel N]
 //   runner assemble <file.wat> <out.wasm>
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::exit;
+use wasmtime::component::{Component, Linker as ComponentLinker, Val};
 use wasmtime::{Config, Engine, Linker, Module, ResourceLimiter, Store};
 
 fn fail(msg: &str) -> ! {
@@ -122,9 +133,8 @@ fn parse_run_args(rest: &[String]) -> Opts {
     }
 }
 
-fn cmd_run(rest: &[String]) {
-    let opts = parse_run_args(rest);
-    let bytes = match &opts.target {
+fn load_bytes(opts: &Opts) -> Vec<u8> {
+    match &opts.target {
         Target::File(path) => std::fs::read(path)
             .unwrap_or_else(|e| fail(&format!("cannot read {}: {e}", path.display()))),
         Target::Object { store, sha } => {
@@ -136,18 +146,21 @@ fn cmd_run(rest: &[String]) {
                 ))
             })
         }
-    };
+    }
+}
 
+fn make_engine() -> Engine {
     let mut config = Config::new();
     config.consume_fuel(true);
     config.wasm_multi_memory(false);
     config.wasm_threads(false);
-    let engine = Engine::new(&config).unwrap_or_else(|e| fail(&format!("engine: {e}")));
-    let module = Module::new(&engine, &bytes)
-        .unwrap_or_else(|e| fail(&format!("not a runnable module: {e}")));
+    config.wasm_component_model(true);
+    Engine::new(&config).unwrap_or_else(|e| fail(&format!("engine: {e}")))
+}
 
+fn make_store(engine: &Engine, opts: &Opts) -> Store<State> {
     let mut store = Store::new(
-        &engine,
+        engine,
         State {
             limits: Limits {
                 max_memory: opts.memory_mb * 1024 * 1024,
@@ -159,19 +172,11 @@ fn cmd_run(rest: &[String]) {
     store
         .set_fuel(opts.fuel)
         .unwrap_or_else(|e| fail(&format!("fuel: {e}")));
+    store
+}
 
-    // The linker is empty on purpose: a module that asks for an
-    // import is asking for authority, and none is on offer.
-    let linker = Linker::new(&engine);
-    let instance = linker
-        .instantiate(&mut store, &module)
-        .unwrap_or_else(|e| fail(&format!("module refused: {e}")));
-    let main = instance
-        .get_typed_func::<(), i32>(&mut store, "main")
-        .unwrap_or_else(|e| fail(&format!("module exports no main () -> i32: {e}")));
-
-    let before = store.get_fuel().unwrap_or(0);
-    match main.call(&mut store, ()) {
+fn report(store: &Store<State>, opts: &Opts, before: u64, result: Result<i32, wasmtime::Error>) {
+    match result {
         Ok(value) => {
             let after = store.get_fuel().unwrap_or(0);
             println!("result: {value}");
@@ -188,6 +193,60 @@ fn cmd_run(rest: &[String]) {
             fail(&format!("trapped: {e}"));
         }
     }
+}
+
+fn cmd_run(rest: &[String]) {
+    let opts = parse_run_args(rest);
+    let bytes = load_bytes(&opts);
+    let engine = make_engine();
+    let module = Module::new(&engine, &bytes)
+        .unwrap_or_else(|e| fail(&format!("not a runnable module: {e}")));
+    let mut store = make_store(&engine, &opts);
+
+    // The linker is empty on purpose: a module that asks for an
+    // import is asking for authority, and none is on offer.
+    let linker = Linker::new(&engine);
+    let instance = linker
+        .instantiate(&mut store, &module)
+        .unwrap_or_else(|e| fail(&format!("module refused: {e}")));
+    let main = instance
+        .get_typed_func::<(), i32>(&mut store, "main")
+        .unwrap_or_else(|e| fail(&format!("module exports no main () -> i32: {e}")));
+
+    let before = store.get_fuel().unwrap_or(0);
+    let result = main.call(&mut store, ());
+    report(&store, &opts, before, result);
+}
+
+fn cmd_run_component(rest: &[String]) {
+    let opts = parse_run_args(rest);
+    let bytes = load_bytes(&opts);
+    let engine = make_engine();
+    let component = Component::new(&engine, &bytes)
+        .unwrap_or_else(|e| fail(&format!("not a runnable component: {e}")));
+    let mut store = make_store(&engine, &opts);
+
+    // Empty, like the core linker: an imported interface is a
+    // request for authority, and none is on offer.
+    let linker = ComponentLinker::new(&engine);
+    let instance = linker
+        .instantiate(&mut store, &component)
+        .unwrap_or_else(|e| fail(&format!("component refused: {e}")));
+    let main = instance
+        .get_func(&mut store, "main")
+        .unwrap_or_else(|| fail("component exports no main () -> s32"));
+
+    let before = store.get_fuel().unwrap_or(0);
+    let mut results = [Val::S32(0)];
+    let result = main
+        .call(&mut store, &[], &mut results)
+        .and_then(|()| match results[0] {
+            Val::S32(v) => Ok(v),
+            ref other => Err(wasmtime::Error::msg(format!(
+                "main returned {other:?}, not an s32"
+            ))),
+        });
+    report(&store, &opts, before, result);
 }
 
 fn cmd_assemble(rest: &[String]) {
@@ -207,6 +266,8 @@ fn usage() -> ! {
     eprintln!("usage:");
     eprintln!("  runner run <file.wasm|file.wat> [--fuel N] [--memory-mb N]");
     eprintln!("  runner run --object <sha256> --store <dir> [--fuel N] [--memory-mb N]");
+    eprintln!("  runner run-component <file.wasm|file.wat> [--fuel N] [--memory-mb N]");
+    eprintln!("  runner run-component --object <sha256> --store <dir> [--fuel N] [--memory-mb N]");
     eprintln!("  runner assemble <file.wat> <out.wasm>");
     exit(2);
 }
@@ -218,6 +279,7 @@ fn main() {
     }
     match args[0].as_str() {
         "run" => cmd_run(&args[1..]),
+        "run-component" => cmd_run_component(&args[1..]),
         "assemble" => cmd_assemble(&args),
         _ => usage(),
     }

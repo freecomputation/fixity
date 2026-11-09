@@ -120,6 +120,16 @@ demonstrate one wall: the honest one computes, the runaway dies by
 fuel, the glutton is refused by the memory cap, the petitioner is
 refused at the door for asking.
 
+Components - the WASI 0.2 shape - run under the same discipline via
+"runner run-component": a component exports "main" returning one
+s32, runs under the same fuel meter and memory cap, from a file or
+from a store object, and the component linker is as empty as the
+core one. A component that imports a WASI interface is asking for
+authority the same way, and none is on offer until a broker grants
+it: components now, capabilities by grant later, never ambient.
+runner/examples/ carries an answer component and an importing
+component that is refused at the door.
+
 ## The broker
 
 Intelligence proposes; the owner disposes - as a machine, not a
@@ -158,7 +168,7 @@ one-line change to any pinned input makes the gate refuse the build.
 The broker and the runner grow the same way, from recipes/broker.json
 (broker 27d19a11dd952c1a41240810245ea51624c780527113c7086020fb44c33a98f0)
 and recipes/runner.json (runner
-ecbb830b424414ef353593ea505e389ff98d4fdf10e789b518962066cbb2ddc6) -
+bdc5747547c3fab91899dc1d066cf4ec4bfed55009dd5b97d8b186500fdf05e8) -
 every tool the system trusts is one it can regrow from pinned source.
 The runner's hash is stated under one condition: its dependency tree
 includes a code generator that embeds the build directory in the

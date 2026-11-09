@@ -8,8 +8,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 8923,
-      "sha256": "926e6230d809ac63409ed86d094d5dcbacd44699e1ad4346a3fa177f63cc608d"
+      "bytes": 9487,
+      "sha256": "1efa54a69900696b96989b36e9335f3a67fc51cd71da8f949349c418a7e92608"
     },
     {
       "path": "broker/Cargo.lock",
@@ -89,7 +89,7 @@
     {
       "path": "recipes/runner.json",
       "bytes": 1016,
-      "sha256": "97523cecddbb826c91fcaf558e131106791ecfc374f546927b3e3d15b75bc293"
+      "sha256": "b2ff70b891d76a2b03bc4bdb12c717bcb37b66941957ddba31f2c4ea53d2e585"
     },
     {
       "path": "runner/Cargo.lock",
@@ -102,6 +102,11 @@
       "sha256": "831d3ea42ac93290a26fed6bd79dcdc79027d97b2390c25188355dc5a70d6e4c"
     },
     {
+      "path": "runner/examples/answer-component.wat",
+      "bytes": 205,
+      "sha256": "55038e6836c8c6da641df8bcfb586c04cbd242856ce9730108def7ae54786d22"
+    },
+    {
       "path": "runner/examples/answer.wat",
       "bytes": 148,
       "sha256": "488924d346ee22fb6c713ff1d4a618f4c125a029e3ab58190f75ea743cf42c45"
@@ -110,6 +115,11 @@
       "path": "runner/examples/greedy.wat",
       "bytes": 423,
       "sha256": "164c9b3ac16c6e0cf98706682826c19be6dcac762ef15eec3c46551683fb85fc"
+    },
+    {
+      "path": "runner/examples/importer-component.wat",
+      "bytes": 253,
+      "sha256": "5d7604d66db84fc0fa5550bc776f6b3f997959c45ae0092748608669886b9148"
     },
     {
       "path": "runner/examples/importer.wat",
@@ -123,10 +133,10 @@
     },
     {
       "path": "runner/src/main.rs",
-      "bytes": 7180,
-      "sha256": "7ca5431c8b9482436cbc5421259734d44fae530fb5e064df351dc32c7aa449f7"
+      "bytes": 9683,
+      "sha256": "7479f1f2abf91f16ad9d4521cd745b5a6d55d83723b4218e034ee31b63b3b7bb"
     }
   ],
-  "total_bytes": 177250,
+  "total_bytes": 180775,
   "note": "Every file the seed carries, by hash and size. Directories named .git, target, and store are never seed members, and neither is this manifest itself. The size law binds the seed and the grower: this total is the number that law governs."
 }
