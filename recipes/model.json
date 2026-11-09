@@ -1,0 +1,56 @@
+{
+  "name": "model",
+  "need": "the model service binary, grown from its own sources",
+  "inputs": [
+    {
+      "path": "../model/Cargo.toml",
+      "sha256": "2fd7cd5a49d785f6fa97d2359289f5e4a8c76975d82849a153069619c1495d1a"
+    },
+    {
+      "path": "../model/Cargo.lock",
+      "sha256": "60dc7026aca49cf7fcbf40a4b0079f2d953290237e81801d567d97329d525598"
+    },
+    {
+      "path": "../model/src/main.rs",
+      "sha256": "6fc435e485dfb168df4d8aac55018b1122f19c1f4bcc7a1ff1b017157510e459"
+    }
+  ],
+  "steps": [
+    [
+      "mkdir",
+      "-p",
+      "src"
+    ],
+    [
+      "cp",
+      "{in0}",
+      "Cargo.toml"
+    ],
+    [
+      "cp",
+      "{in1}",
+      "Cargo.lock"
+    ],
+    [
+      "cp",
+      "{in2}",
+      "src/main.rs"
+    ],
+    [
+      "cargo",
+      "build",
+      "--release",
+      "--offline",
+      "--target-dir",
+      "target"
+    ],
+    [
+      "cp",
+      "target/release/model",
+      "{out}/model"
+    ]
+  ],
+  "outputs": [
+    "model"
+  ]
+}
