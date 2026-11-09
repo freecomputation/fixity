@@ -1,0 +1,18 @@
+{
+  "name": "grower",
+  "need": "the acceptance test in the name: the grower grows itself, bit for bit",
+  "inputs": [
+    { "path": "../grower/Cargo.toml", "sha256": "7d86e7391c8928ca35c560cbeeb2cbbaf1e55185b20323f854ac2b28fa1a58c3" },
+    { "path": "../grower/Cargo.lock", "sha256": "687748e201c3776087c53219929134b4caf0fb835ee02c439c1917621594037b" },
+    { "path": "../grower/src/main.rs", "sha256": "96b093454dc4df37a3547b65a9ba388c987eebdcb8fb28af5c7c747c48aaf0ae" }
+  ],
+  "steps": [
+    ["mkdir", "-p", "src"],
+    ["cp", "{in0}", "Cargo.toml"],
+    ["cp", "{in1}", "Cargo.lock"],
+    ["cp", "{in2}", "src/main.rs"],
+    ["cargo", "build", "--release", "--offline", "--target-dir", "target"],
+    ["cp", "target/release/grower", "{out}/grower"]
+  ],
+  "outputs": ["grower"]
+}
