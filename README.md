@@ -11,6 +11,11 @@ code on any machine. What stops being needed composts back to seed.
 The name is the acceptance test: idem, the same. Apply the system to
 itself and the result is bit-for-bit the same, or it is not ours.
 
+In the system prose of Optic, idem is grow-system. The explicit
+name says what it does: it grows the system, on the spot, from
+material aboard. The codename idem remains the repo handle, at
+freecomputation/idem, because a repo slug is an address.
+
 Umiak, the standalone offline browser in its own repository, is idem's
 first form. This repository holds the layer underneath: the grower.
 
