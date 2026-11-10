@@ -1,5 +1,5 @@
 {
-  "format": "idem-seed/0",
+  "format": "fixity-seed/0",
   "files": [
     {
       "path": ".gitignore",
@@ -8,8 +8,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 11846,
-      "sha256": "3358d3e5dec038dc7323fed0aeb8454ba69d1cb95d641ac4922a316acb7dc07f"
+      "bytes": 11803,
+      "sha256": "58efdebe1ad22e0f6c1652c5e40ac782e642ce397011952c11e30b1152ec75f8"
     },
     {
       "path": "broker/Cargo.lock",
@@ -23,8 +23,8 @@
     },
     {
       "path": "broker/src/main.rs",
-      "bytes": 18436,
-      "sha256": "59d9336dd1332b72f20adca9f4f6834362d9d34bbc146d1991df1e721660c7ff"
+      "bytes": 18632,
+      "sha256": "be73719dfce83036ebe3d803291f6767ee4372cba0746bc26fdbbcd9c526c084"
     },
     {
       "path": "grower/Cargo.lock",
@@ -38,8 +38,8 @@
     },
     {
       "path": "grower/src/main.rs",
-      "bytes": 47898,
-      "sha256": "5d48c57c92a12e44260771915f3538b9241a8b15ed459f5ff3fbef44e1e3a44d"
+      "bytes": 48528,
+      "sha256": "4dedb6e11bfdf3e72f99692ba2233e955206068c0afef5467428fe41439f1b1a"
     },
     {
       "path": "model/Cargo.lock",
@@ -53,8 +53,8 @@
     },
     {
       "path": "model/src/main.rs",
-      "bytes": 9959,
-      "sha256": "6fc435e485dfb168df4d8aac55018b1122f19c1f4bcc7a1ff1b017157510e459"
+      "bytes": 10599,
+      "sha256": "b23a58498565a691dcff5378616d5354f0de213b8dea8097c87d0e86a5357586"
     },
     {
       "path": "recipes/answer-module.json",
@@ -63,13 +63,13 @@
     },
     {
       "path": "recipes/broker.json",
-      "bytes": 1008,
-      "sha256": "0e945ce38652c9541dea9a9a5bfc311f1e43e8d5dfb74f782f31ef9c57ced01e"
+      "bytes": 881,
+      "sha256": "2594ef3b1d353380b281bf5230723d8feb5cd877f01e2f59e5b25082e41d096c"
     },
     {
       "path": "recipes/grower.json",
-      "bytes": 1002,
-      "sha256": "3bdc688cb075ee854df0e78020fd7cbd983e362d401ece6e6f4be37eaaa3eda9"
+      "bytes": 875,
+      "sha256": "2fb440b5870dc9b2a729594787a3fdff06a16c72ceb978c51af6a1bc753b99e9"
     },
     {
       "path": "recipes/hello-buildinfo.json",
@@ -103,13 +103,13 @@
     },
     {
       "path": "recipes/model.json",
-      "bytes": 977,
-      "sha256": "aeef6aae72739898036cc831f7d1ce7d0591f1fd14834fbc7945a66a4d013a82"
+      "bytes": 851,
+      "sha256": "b3f188d9e8701b45485b528888306f496f196373f6f739762d21c85681cb2d94"
     },
     {
       "path": "recipes/runner.json",
-      "bytes": 1016,
-      "sha256": "b2ff70b891d76a2b03bc4bdb12c717bcb37b66941957ddba31f2c4ea53d2e585"
+      "bytes": 889,
+      "sha256": "d112e6cae714fb8ab7844c03244503bb7982f862171aa38fa746eced9b7f1d9d"
     },
     {
       "path": "runner/Cargo.lock",
@@ -157,6 +157,6 @@
       "sha256": "7479f1f2abf91f16ad9d4521cd745b5a6d55d83723b4218e034ee31b63b3b7bb"
     }
   ],
-  "total_bytes": 199188,
+  "total_bytes": 200104,
   "note": "Every file the seed carries, by hash and size. Directories named .git, target, and store are never seed members, and neither is this manifest itself. The size law binds the seed and the grower: this total is the number that law governs."
 }
