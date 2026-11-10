@@ -1,4 +1,4 @@
-// grower - the idem growth engine, v0.
+// grower - the Fixity growth engine, v0.
 //
 // A derivation is a JSON file: a name, the need that called it, the
 // inputs it is made from (each pinned by sha256), the steps that build
@@ -408,7 +408,12 @@ fn load_signing_key(path: &Path) -> SigningKey {
     let text = fs::read_to_string(path)
         .unwrap_or_else(|e| fail(&format!("cannot read key file {}: {e}", path.display())));
     for line in text.lines() {
-        if let Some(hex) = line.strip_prefix("idem-ed25519-secret ") {
+        // Key files written before the rename carry the idem- prefix;
+        // they stay readable.
+        let hex = line
+            .strip_prefix("fixity-ed25519-secret ")
+            .or_else(|| line.strip_prefix("idem-ed25519-secret "));
+        if let Some(hex) = hex {
             let bytes = hex_decode(hex)
                 .filter(|b| b.len() == 32)
                 .unwrap_or_else(|| fail("key file secret is not 32 bytes of hex"));
@@ -417,7 +422,7 @@ fn load_signing_key(path: &Path) -> SigningKey {
             return SigningKey::from_bytes(&seed);
         }
     }
-    fail("key file carries no idem-ed25519-secret line")
+    fail("key file carries no fixity-ed25519-secret line")
 }
 
 fn cmd_keygen(path: &Path) {
@@ -432,7 +437,7 @@ fn cmd_keygen(path: &Path) {
     let key = SigningKey::from_bytes(&seed);
     let public = hex_encode(key.verifying_key().as_bytes());
     let text = format!(
-        "idem-ed25519-secret {}\nidem-ed25519-public {public}\n",
+        "fixity-ed25519-secret {}\nfixity-ed25519-public {public}\n",
         hex_encode(&seed)
     );
     fs::write(path, text).unwrap_or_else(|e| fail(&format!("cannot write key file: {e}")));
@@ -491,7 +496,7 @@ fn cmd_edition_pack(deriv_path: &Path, capsule_dir: &Path, sign_key: Option<&Pat
     }
 
     // Grow once into a scratch store to learn the outputs.
-    let scratch = env::temp_dir().join(format!("idem-pack-{}", std::process::id()));
+    let scratch = env::temp_dir().join(format!("fixity-pack-{}", std::process::id()));
     let receipt = run_self(&scratch, deriv_path);
     let _ = fs::remove_dir_all(&scratch);
 
@@ -610,8 +615,15 @@ enum LogRecord {
 
 /// The bytes a witness signature answers to, domain separated from
 /// manifest signatures so a key's signature on one kind of statement
-/// can never be replayed as the other.
+/// can never be replayed as the other. New witness signatures are
+/// made over the fixity- body; logs witnessed before the rename
+/// carry signatures over the idem- body, and verification accepts
+/// either body so those logs still verify.
 fn witness_body(head: &str) -> Vec<u8> {
+    format!("fixity-witness: {head}\n").into_bytes()
+}
+
+fn witness_body_legacy(head: &str) -> Vec<u8> {
     format!("idem-witness: {head}\n").into_bytes()
 }
 
@@ -829,7 +841,9 @@ fn cmd_edition_log(log_path: &Path) {
                 let mut sb = [0u8; 64];
                 sb.copy_from_slice(&sig_bytes);
                 let sig = Signature::from_bytes(&sb);
-                if verifying.verify(&witness_body(&w.head), &sig).is_err() {
+                if verifying.verify(&witness_body(&w.head), &sig).is_err()
+                    && verifying.verify(&witness_body_legacy(&w.head), &sig).is_err()
+                {
                     fail("witness signature does not verify");
                 }
                 println!("- witnessed: {} over head {}", w.signer, w.head);
@@ -1000,7 +1014,7 @@ fn cmd_recipe_from_buildinfo(buildinfo_path: &Path, out_path: &Path, dsc_path: O
         ),
     };
     let recipe = BuildInfoRecipe {
-        format: "idem-buildinfo-recipe/0".to_string(),
+        format: "fixity-buildinfo-recipe/0".to_string(),
         version: field(&fields, "Version").to_string(),
         architecture: field(&fields, "Architecture").to_string(),
         build_architecture: field(&fields, "Build-Architecture").to_string(),
@@ -1104,7 +1118,7 @@ fn cmd_seed_write(dir: &Path, out_path: &Path, excludes: &[String]) {
     let files = collect_seed(dir, excludes);
     let total: u64 = files.iter().map(|f| f.bytes).sum();
     let manifest = SeedManifest {
-        format: "idem-seed/0".to_string(),
+        format: "fixity-seed/0".to_string(),
         files,
         total_bytes: total,
         note: "Every file the seed carries, by hash and size. Directories named .git, target, and store are never seed members, and neither is this manifest itself. The size law binds the seed and the grower: this total is the number that law governs.".to_string(),

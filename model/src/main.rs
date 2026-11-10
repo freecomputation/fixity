@@ -1,4 +1,4 @@
-// The model service: idem's intelligence, kept unprivileged.
+// The model service: Fixity's intelligence, kept unprivileged.
 //
 // Determination 8 gave the shape: a model service that proposes,
 // and a trusted-core broker that disposes. This binary is the
@@ -16,7 +16,7 @@
 // - scribe (always aboard): deterministic drafting from material
 //   at hand. Notes from text, growth proposals from a derivation
 //   it has read and checked, and world drafts for Optic: it reads
-//   a document through the optic window and proposes a mutation
+//   a document through the palimpsest window and proposes a mutation
 //   of it back through the same window, as a proposal the owner
 //   keeps or discards.
 // - llama (when a machine carries it): free text from a local
@@ -82,6 +82,22 @@ fn sibling(name: &str) -> String {
         }
     }
     name.to_string()
+}
+
+// The window binary, under its current name first and its
+// pre-rename name second, beside this executable or on the PATH.
+fn window_binary() -> String {
+    if let Ok(exe) = std::env::current_exe() {
+        let p = exe.with_file_name("palimpsest");
+        if p.exists() {
+            return p.to_string_lossy().to_string();
+        }
+        let o = exe.with_file_name("optic");
+        if o.exists() {
+            return o.to_string_lossy().to_string();
+        }
+    }
+    "palimpsest".to_string()
 }
 
 fn run_capture(program: &str, args: &[&str], stdin_text: Option<&str>) -> (bool, String) {
@@ -174,7 +190,7 @@ fn draft_grow(derivation: &str, store: &str) -> Action {
 
 fn propose_via_broker(home: &str, action: &Action) {
     let json = serde_json::to_string(action).unwrap();
-    let scratch = std::env::temp_dir().join(format!("idem-model-action-{}.json", std::process::id()));
+    let scratch = std::env::temp_dir().join(format!("fixity-model-action-{}.json", std::process::id()));
     std::fs::write(&scratch, &json).unwrap();
     let broker = sibling("broker");
     let (ok, out) = run_capture(
@@ -212,14 +228,16 @@ fn cmd_propose_world(args: &[String]) {
     let world = need(args, "--world");
     let doc = need(args, "--doc");
     let op = flag(args, "--op").unwrap_or("rotate");
-    let optic = sibling("optic");
-    let (ok, text) = run_capture(&optic, &["view", world, doc], None);
+    // The window binary is palimpsest; installs from before the
+    // rename carry it as optic beside this executable.
+    let window = window_binary();
+    let (ok, text) = run_capture(&window, &["view", world, doc], None);
     if !ok {
         fail(&format!("the window would not show {doc}: {}", text.trim()));
     }
     let draft = apply_op(&text, op);
     println!("- scribe drafted a {op} of {doc} through the window");
-    let (ok, out) = run_capture(&optic, &["propose", world, doc], Some(&draft));
+    let (ok, out) = run_capture(&window, &["propose", world, doc], Some(&draft));
     print!("{out}");
     if !ok {
         fail("the window refused the draft");

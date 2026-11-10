@@ -203,7 +203,11 @@ impl Home {
             fail("broker home is not initialized - run broker init first")
         });
         for line in text.lines() {
-            if let Some(hex) = line.strip_prefix("idem-ed25519-secret ") {
+            // Key files written before the rename carry the idem- prefix.
+            let hex = line
+                .strip_prefix("fixity-ed25519-secret ")
+                .or_else(|| line.strip_prefix("idem-ed25519-secret "));
+            if let Some(hex) = hex {
                 let bytes = hex_decode(hex)
                     .filter(|b| b.len() == 32)
                     .unwrap_or_else(|| fail("broker key is malformed"));
@@ -303,7 +307,7 @@ fn cmd_init(home: &Home) {
     let key = SigningKey::from_bytes(&seed);
     let public = hex_encode(key.verifying_key().as_bytes());
     let text = format!(
-        "idem-ed25519-secret {}\nidem-ed25519-public {public}\n",
+        "fixity-ed25519-secret {}\nfixity-ed25519-public {public}\n",
         hex_encode(&seed)
     );
     fs::write(&key_path, text).unwrap_or_else(|e| fail(&format!("cannot write key: {e}")));

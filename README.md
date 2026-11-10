@@ -1,6 +1,6 @@
-# idem
+# Fixity
 
-idem is a system that is not shipped complete. It is shipped able to
+Fixity is a system that is not shipped complete. It is shipped able to
 complete itself: it grows the code it needs, on the machine, from
 material aboard, and everything it grows carries a receipt - the need
 that called it, what it was made from, the hash it answers to - and
@@ -8,15 +8,13 @@ passes a growth gate before it runs. Where growth is derivation from
 aboard sources, the same seed meeting the same need grows bit-identical
 code on any machine. What stops being needed composts back to seed.
 
-The name is the acceptance test: idem, the same. Apply the system to
-itself and the result is bit-for-bit the same, or it is not ours.
+The name is the preservation word for what the gate proves:
+fixity is the property of a thing demonstrated unchanged, its
+hash today answering to its hash when it was made. Apply the
+system to itself and the result is bit-for-bit the same, or it
+is not ours - fixity is that sameness, checked.
 
-In the system prose of Optic, idem is grow-system. The explicit
-name says what it does: it grows the system, on the spot, from
-material aboard. The codename idem remains the repo handle, at
-freecomputation/idem, because a repo slug is an address.
-
-Umiak, the standalone offline browser in its own repository, is idem's
+Coffer, the standalone offline browser in its own repository, is Fixity's
 first form. This repository holds the layer underneath: the grower.
 
 ## The grower
@@ -173,7 +171,7 @@ allow; a growth the model proposed stopped at the broker's
 signed warning with nothing grown; the owner's confirm and
 execute then grew hello at its acceptance hash. The model
 service itself grows bit-identically from recipes/model.json -
-51d0afe0 under rustc 1.99.1 with its pinned dependencies.
+6a3ec613 under rustc 1.99.1 with its pinned dependencies.
 
 ## The seed manifest
 
@@ -191,25 +189,26 @@ The grower recipe grows the grower from its own source. Built with
 rustc 1.99.1 and the dependency versions pinned in grower/Cargo.lock,
 the grown binary and the binary that grew it hash identically:
 
-fbd7b6e84fbd967c1bdc47f11dbd48507e0d70c211f185c646225283f443da49
+d57f333d2baca7cd5d2605c6ab407bce5a415812ba415fc1004572a4019e9c94
 
 A second growth of the same derivation reproduces that hash, and a
 one-line change to any pinned input makes the gate refuse the build.
 The broker and the runner grow the same way, from recipes/broker.json
-(broker 27d19a11dd952c1a41240810245ea51624c780527113c7086020fb44c33a98f0)
+(broker e35ab80656ec867d4dae21689775c5393679e4ec2828ac0c719b62e1e7f1b565)
 and recipes/runner.json (runner
-bdc5747547c3fab91899dc1d066cf4ec4bfed55009dd5b97d8b186500fdf05e8) -
+a16d869c2f6595dcc672466356cc89da01e0543f1aba4f73832337b93a84ce42) -
 every tool the system trusts is one it can regrow from pinned source.
 The runner's hash is stated under one condition: its dependency tree
 includes a code generator that embeds the build directory in the
 binary, so the runner recipe is grown with RUSTFLAGS carrying
---remap-path-prefix <build-dir>=/idem. With the prefix remapped, the
+--remap-path-prefix <build-dir>=/fixity. With the prefix remapped, the
 grown runner and a direct build hash identically; without it, the
 two differ only in those embedded paths. That is the whole claim of the system, demonstrated at the smallest
 scale before anything larger is built on it.
 
 The test has also been run on a second host - the owner's
-EliteDesk 800 G1 under Fedora 45, on 2026-11-09. There the
+EliteDesk 800 G1 under Fedora 45, on 2026-11-09, against the
+sources of that day. There the
 grower, broker, and model each grew bit-identically against that
 host's own direct builds, and the runner did the same once its
 remap condition was applied to the growth as the statement above
@@ -220,7 +219,7 @@ used here are different builds of the same version, and
 bit-identity is a property of one toolchain build, not of a
 version number. What crossed between the hosts unchanged was
 the store: the same derivation grew the same content hash on
-both, and Pisuk's two-host walk ran on it.
+both, and Propagule's two-host walk ran on it.
 
 ## Building
 
